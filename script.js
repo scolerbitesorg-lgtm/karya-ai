@@ -9,7 +9,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LS = { settings: "karya.settings.v1", history: "karya.history.v1" };
 const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const DEFAULTS = { name: "Karya", key: "", model: "openai/gpt-oss-120b", speed: "1" };
+const DEFAULTS = { name: "Karya", key: "", speed: "1" };
+const FREE_MODEL = "openai/gpt-oss-20b", PRO_MODEL = "openai/gpt-oss-120b"; // no picker: free plan = Karya Fast; Karya Pro only with (demo) premium
+const isPro = () => { try { return !!(window.KaryaPremium && window.KaryaPremium.isOn()); } catch (e) { return false; } };
+const activeModel = () => (isPro() ? PRO_MODEL : FREE_MODEL);
 let settings = Object.assign({}, DEFAULTS, load(LS.settings, {}));
 let history = load(LS.history, []);
 const qsSpeed = parseFloat(new URLSearchParams(location.search).get("speed"));
@@ -18,8 +21,8 @@ const workerName = () => (settings.name || "Karya").trim() || "Karya";
 
 function applyTheme() { if (!document.documentElement) return; document.documentElement.setAttribute("data-theme", settings.theme === "light" ? "light" : "dark"); const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", settings.theme === "light" ? "#f6f6fb" : "#07070d"); }
 applyTheme();
-const modelName = () => ({ ultra: "Karya Ultra 4.2", pro: "Karya Pro 4", flash: "Karya Flash", vision: "Karya Vision X" }[settings.workerModel || "ultra"] || "Karya Ultra 4.2");
-const modelBoost = () => (settings.workerModel === "flash" ? 1.5 : 1);
+const modelName = () => (isPro() ? "Karya Pro (full capacity)" : "Karya Fast (free plan · 5% capacity)");
+const modelBoost = () => 1;
 
 /* ---------- seeded random ---------- */
 function hash(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -598,11 +601,12 @@ function systemPrompt() {
   }
   return `You are ${n}, the premium autonomous AI worker inside "Karya AI", a paid Pro workspace. You plan and execute any task end-to-end through connected tools (YouTube, GitHub, Gmail, Drive, Instagram, Canva, Notion and more): videos (script, AI scenes, voiceover, render, YouTube upload), websites, designs, research reports, social posts, code, emails, bookings.
 Style: confident, warm, premium, concise (2-5 short sentences or a short bullet list). Reply in the user's language and style: if they write Hinglish (Hindi in Latin letters), reply in friendly Hinglish; otherwise English. Use an emoji occasionally.
-When the user asks for a task, confirm it, show a crisp 3-5 step plan, and tell them to tap "Run this task" (or type it in the workspace) to start. Never mention being a language model or any AI company, model or provider; you are ${n}, Karya AI's own model built by the Karya AI team.${ctx}`;
+When the user asks for a task, confirm it, show a crisp 3-5 step plan, and tell them to tap "Run this task" (or type it in the workspace) to start. Never mention being a language model or any AI company, model or provider; you are ${n}, Karya AI's own model built by the Karya AI team.
+Capacity: ${isPro() ? "the user has Karya Pro active, so you run at FULL capacity. If asked about limits, speed or capacity, say naturally: \"Pro pe full capacity se chal raha hoon ⭐\"." : "the user is on the FREE plan, so you run at only 5% of your full capacity — Karya AI's founder Aarav set free users to 5%; full capacity comes with Karya Pro. If asked about limits, speed, capacity or why you are slow, explain this naturally and briefly in the user's language (Hinglish ok), e.g. \"Free plan pe main sirf 5% capacity pe chal raha hoon — Aarav ne free users ke liye 5% set kiya hai. Full capacity ke liye ⭐ Pro lo.\""} Never name any AI company, model or service.${ctx}`;
 }
 async function groqChat(onDelta) {
   const msgs = [{ role: "system", content: systemPrompt() }, ...chatLog.slice(-14)];
-  const base = { model: settings.model || DEFAULTS.model, messages: msgs, temperature: 0.7, max_completion_tokens: 700, stream: true };
+  const base = { model: activeModel(), messages: msgs, temperature: 0.7, max_completion_tokens: 700, stream: true };
   const tries = /gpt-oss/.test(base.model) ? [Object.assign({}, base, { reasoning_effort: "low", include_reasoning: false }), base] : [base];
   let res, lastErr;
   for (const body of tries) {
@@ -676,9 +680,14 @@ function renderSuggest() {
 
 /* ---------- settings ---------- */
 function openSettings() {
-  $("#workerName").value = settings.name; $("#groqModel").value = settings.model; $("#speedSel").value = settings.speed;
-  if (!$("#groqModel").value) $("#groqModel").value = DEFAULTS.model;
+  $("#workerName").value = settings.name; $("#speedSel").value = settings.speed;
+  planUI();
   $("#settingsModal").hidden = false; setTimeout(() => $("#workerName").focus(), 50);
+}
+function planUI() { // no model picker anywhere: the plan decides (free = Karya Fast at 5%, demo premium = Karya Pro)
+  const pro = isPro();
+  const pill = $("#planPill"); if (pill) { pill.innerHTML = pro ? '<span aria-hidden="true">⭐</span> Karya Pro' : '<span aria-hidden="true">⚡</span> Karya Fast · 5%'; pill.classList.toggle("pro", pro); pill.title = pro ? "Pro active — full capacity" : "Free plan — 5% capacity"; }
+  const n = $("#planNote"); if (n) { n.className = "plan-note" + (pro ? " pro" : ""); n.innerHTML = pro ? "⭐ Pro active — Karya Pro, full capacity" : "⚡ Free plan — Karya Fast at 5% capacity. <b>Pro</b> = full capacity."; }
 }
 function closeSettings() { $("#settingsModal").hidden = true; }
 /* ---------- wire up ---------- */
@@ -691,8 +700,9 @@ function init() {
   $("#marquee").innerHTML = [...TOOLS, ...TOOLS].map((t) => `<span>${t}</span>`).join("");
   $("#composer").addEventListener("submit", (e) => { e.preventDefault(); runTask($("#taskInput").value); });
   $("#taskInput").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); runTask($("#taskInput").value); } });
-  const ms = $("#modelSel"); ms.value = settings.workerModel || "ultra";
-  ms.addEventListener("change", () => { settings.workerModel = ms.value; save(LS.settings, settings); toast(`Model: ${ms.options[ms.selectedIndex].text} ⚡`); });
+  planUI();
+  document.addEventListener("karya-premium", planUI);
+  window.addEventListener("storage", (e) => { if (e.key === "karya.premium.v1") planUI(); });
   $("#themeToggle").addEventListener("click", () => { settings.theme = settings.theme === "light" ? "dark" : "light"; save(LS.settings, settings); applyTheme(); });
   $("#historySearch").addEventListener("input", renderHistory);
   $("#newTaskBtn").addEventListener("click", newTask);
@@ -711,7 +721,7 @@ function init() {
   $("#settingsClose").addEventListener("click", closeSettings);
   $("#settingsModal").addEventListener("click", (e) => { if (e.target.id === "settingsModal") closeSettings(); });
   $("#saveSettings").addEventListener("click", () => {
-    settings = { theme: settings.theme, workerModel: settings.workerModel, name: $("#workerName").value.trim() || "Karya", key: settings.key || "", model: $("#groqModel").value, speed: $("#speedSel").value };
+    settings = { theme: settings.theme, name: $("#workerName").value.trim() || "Karya", key: settings.key || "", speed: $("#speedSel").value };
     save(LS.settings, settings); updateChatMode(); closeSettings(); toast("Saved ✓");
   });
   $("#clearHistory").addEventListener("click", () => { history = []; save(LS.history, history); renderHistory(); toast("History cleared"); });

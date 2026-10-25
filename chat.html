@@ -33,7 +33,7 @@
       <button class="icon-btn only-mobile" id="sideOpen" aria-label="Open chat list">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
       </button>
-      <button class="model-pill" id="modelPill" aria-label="Chat model and settings"><span class="dot" id="statusDot"></span><span id="modelLabel">Karya AI</span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+      <button class="model-pill" id="modelPill" aria-label="Plan and settings"><span class="dot" id="statusDot"></span><span id="modelLabel">Karya AI</span><span class="plan-badge" id="planBadge">Free<span class="pb-long"> plan</span> · 5% capacity</span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
       <div class="bar-actions">
         <button class="icon-btn" id="barNew" aria-label="New chat" title="New chat"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 20H5a1 1 0 0 1-1-1v-7M15 4l5 5-9 9H6v-5z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></button>
         <button class="icon-btn" id="barSettings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
@@ -88,8 +88,7 @@
       </details>
     </div>
     <div class="field">
-      <label for="modelSel">Model</label>
-      <select id="modelSel"></select>
+      <div class="plan-note" id="planNote" role="status"></div>
     </div>
     <div class="field">
       <label for="tempIn">Creativity <small id="tempVal">0.7</small></label>

@@ -74,13 +74,7 @@
         <textarea id="taskInput" rows="3" maxlength="600" placeholder="e.g. Make a 60-second video about the Indian Army and upload it to YouTube"></textarea>
         <div class="composer-bar">
           <div class="composer-tools">
-            <label class="tool-pill model-pill"><span aria-hidden="true">⚡</span><span class="sr-only">Worker model</span>
-              <select id="modelSel" aria-label="Worker model">
-                <option value="ultra">Karya Ultra 4.2</option>
-                <option value="pro">Karya Pro 4</option>
-                <option value="flash">Karya Flash</option>
-                <option value="vision">Karya Vision X</option>
-              </select></label>
+            <span class="tool-pill tool-static plan-pill" id="planPill" title="Free plan — 5% capacity"><span aria-hidden="true">⚡</span> Karya Fast · 5%</span>
             <span class="tool-pill tool-static"><span aria-hidden="true">🔗</span> 42 tools</span>
           </div>
           <button type="submit" class="btn btn-primary run-btn" id="runBtn">
@@ -214,12 +208,7 @@
       <input id="workerName" type="text" maxlength="24" placeholder="Karya">
     </div>
     <div class="field">
-      <label for="groqModel">Chat model</label>
-      <select id="groqModel">
-        <option value="openai/gpt-oss-120b">Karya Pro (recommended)</option>
-        <option value="openai/gpt-oss-20b">Karya Fast (fastest)</option>
-        <option value="qwen/qwen3.8-27b">Karya Ultra (preview)</option>
-      </select>
+      <div class="plan-note" id="planNote" role="status"></div>
     </div>
     <div class="field">
       <label for="speedSel">Run speed</label>
