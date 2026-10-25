@@ -74,14 +74,18 @@
   <div class="modal-card">
     <div class="modal-head"><h2 id="setTitle">Chat settings</h2><button class="icon-btn" id="setClose" aria-label="Close settings"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
     <div class="field">
-      <label for="keyInput">Groq API key <small>(optional)</small></label>
-      <div class="key-row">
-        <input id="keyInput" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off" autocapitalize="off">
-        <button type="button" class="btn btn-ghost" id="keyShow">Show</button>
-        <button type="button" class="btn btn-ghost" id="keyTest">Test</button>
-      </div>
-      <small class="hint">Optional — the server key is used if set. A personal key is saved only in this browser and sent only to api.groq.com (free at console.groq.com/keys).</small>
+      <label>Live chat</label>
       <p class="status" id="keyStatus" role="status"></p>
+      <details class="adv">
+        <summary>Advanced</summary>
+        <label for="keyInput">Custom API key <small>(optional)</small></label>
+        <div class="key-row">
+          <input id="keyInput" type="password" placeholder="Paste key" spellcheck="false" autocomplete="off" autocapitalize="off">
+          <button type="button" class="btn btn-ghost" id="keyShow">Show</button>
+          <button type="button" class="btn btn-ghost" id="keyTest">Test</button>
+        </div>
+        <small class="hint">Not needed — Karya AI works without it. If you add one, it is saved only in this browser.</small>
+      </details>
     </div>
     <div class="field">
       <label for="modelSel">Model</label>

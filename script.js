@@ -561,7 +561,7 @@ function cannedReply(text) {
   if (/(who are you|kaun ho|what are you|tum kya ho|about you)/.test(t)) return hi ? `Main ${n} hoon — ek autonomous AI worker. Video, website, design, research, posts, code — sab khud karta hoon, 42 tools ke saath. 🚀` : `I'm ${n} — an autonomous AI worker. Videos, websites, designs, research, posts and code, all handled end-to-end across 42 connected tools. 🚀`;
   if (/(what can you do|kya kar sakte|kya kr skte|features|capabilit|help)/.test(t)) return hi ? "Main ye sab kar sakta hoon:\n• 🎬 Video bana ke YouTube pe upload\n• 🌐 Website bana ke live\n• 🎨 Poster / logo / thumbnail\n• 📊 Research report\n• 📣 Insta / LinkedIn posts\nBas task likho! ✨" : "Here's what I can take off your plate:\n• 🎬 Make a video and publish it to YouTube\n• 🌐 Build and deploy a website\n• 🎨 Posters, logos, thumbnails\n• 📊 Deep research reports\n• 📣 Social posts, scheduled\nJust describe the task ✨";
   if (/(price|pricing|plan|cost|paisa|kitne ka|subscription|pro)\b/.test(t)) return hi ? "Tum **Pro** plan pe ho ✨ — unlimited tasks, priority GPU lane aur 4K renders. Plans neeche Pricing section me hain." : "You're on **Pro** ✨ — unlimited tasks, priority GPU lane and 4K renders. Plans are in the Pricing section below.";
-  if (/(groq|api key|key)\b/.test(t)) return hi ? "Settings ⚙️ me apni Groq API key daalo — phir main live AI se chat karunga. Key sirf tumhare browser me save hoti hai." : "Add your Groq API key in Settings ⚙️ and I'll switch to live AI chat. The key stays in your browser only.";
+  if (/(api key|key)\b/.test(t)) return hi ? "Koi key nahi chahiye 🙂 Karya AI seedha chat karta hai — chat ke liye upar Chat kholo." : "No key needed 🙂 Karya AI chats directly — open Chat from the top.";
   if (/(thank|thanks|shukriya|dhanyavad|thx|great|awesome|nice|mast|badhiya)/.test(t)) return hi ? "Koi baat nahi! 🙌 Aur kuch karna ho to batao." : "Anytime! 🙌 What should we tackle next?";
   if (TASKY.test(t) || t.split(/\s+/).length >= 5) {
     const plan = buildPlan(text, "chat");
@@ -598,7 +598,7 @@ function systemPrompt() {
   }
   return `You are ${n}, the premium autonomous AI worker inside "Karya AI", a paid Pro workspace. You plan and execute any task end-to-end through connected tools (YouTube, GitHub, Gmail, Drive, Instagram, Canva, Notion and more): videos (script, AI scenes, voiceover, render, YouTube upload), websites, designs, research reports, social posts, code, emails, bookings.
 Style: confident, warm, premium, concise (2-5 short sentences or a short bullet list). Reply in the user's language and style: if they write Hinglish (Hindi in Latin letters), reply in friendly Hinglish; otherwise English. Use an emoji occasionally.
-When the user asks for a task, confirm it, show a crisp 3-5 step plan, and tell them to tap "Run this task" (or type it in the workspace) to start. Never mention being a language model, Groq, or any provider; you are ${n}.${ctx}`;
+When the user asks for a task, confirm it, show a crisp 3-5 step plan, and tell them to tap "Run this task" (or type it in the workspace) to start. Never mention being a language model or any AI company, model or provider; you are ${n}, Karya AI's own model built by the Karya AI team.${ctx}`;
 }
 async function groqChat(onDelta) {
   const msgs = [{ role: "system", content: systemPrompt() }, ...chatLog.slice(-14)];
@@ -649,7 +649,7 @@ async function sendChat(text) {
     }
   } catch (e) {
     const bad = e.status === 401 || e.status === 403;
-    tb.innerHTML = md(bad ? "⚠️ Your Groq key was rejected. Check it in **Settings** — meanwhile I'm in offline mode." : `⚠️ Live AI is unreachable right now (${e.message || "network"}). Answering in offline mode:`);
+    tb.innerHTML = md(bad ? "⚠️ Your custom key was rejected. Check it in **Settings → Advanced** — meanwhile I'm in offline mode." : `⚠️ Live AI is unreachable right now (network). Answering in offline mode:`);
     if (!bad) { const r = cannedReply(text); const reply = typeof r === "string" ? r : r.text; const d = addMsg("bot", reply, r.task); chatLog.push({ role: "assistant", content: reply }); }
   }
   chatBusy = false;
@@ -677,7 +677,7 @@ function renderSuggest() {
 function openSettings() {
   $("#workerName").value = settings.name; $("#groqKey").value = settings.key; $("#groqModel").value = settings.model; $("#speedSel").value = settings.speed;
   if (!$("#groqModel").value) $("#groqModel").value = DEFAULTS.model;
-  $("#keyStatus").textContent = settings.key ? "Live AI chat is on." : "No personal key — chat uses the server key if the site has one.";
+  $("#keyStatus").textContent = settings.key ? "Live AI chat is on." : "Live chat works without a key.";
   $("#settingsModal").hidden = false; setTimeout(() => $("#workerName").focus(), 50);
 }
 function closeSettings() { $("#settingsModal").hidden = true; }
@@ -687,8 +687,8 @@ async function testKey() {
   st.textContent = "Testing…";
   try {
     const r = await fetch("https://api.groq.com/openai/v1/models", { headers: { Authorization: "Bearer " + key } });
-    st.textContent = r.ok ? "✅ Key works. Save to enable live chat." : r.status === 401 ? "❌ Key rejected (401)." : "⚠️ Groq answered " + r.status + ".";
-  } catch (e) { st.textContent = "⚠️ Couldn't reach Groq from this network."; }
+    st.textContent = r.ok ? "✅ Key works. Save to enable live chat." : r.status === 401 ? "❌ Key rejected (401)." : "⚠️ Check failed (" + r.status + ").";
+  } catch (e) { st.textContent = "⚠️ Couldn't check the key from this network."; }
 }
 
 /* ---------- wire up ---------- */

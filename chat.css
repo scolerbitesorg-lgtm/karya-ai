@@ -389,3 +389,12 @@ a{color:inherit}
   .ws-hero .rc-ico{width:44px;height:44px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Settings → Advanced (optional custom key) */
+.adv { margin-top: 10px; }
+.adv > summary { cursor: pointer; font-size: 13px; opacity: .75; list-style: none; padding: 6px 0; }
+.adv > summary::-webkit-details-marker { display: none; }
+.adv > summary::before { content: "▸ "; }
+.adv[open] > summary::before { content: "▾ "; }
+.adv[open] > summary { margin-bottom: 6px; }
+.msg .row.choice { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 2px; }

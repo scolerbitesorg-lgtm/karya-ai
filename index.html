@@ -214,19 +214,21 @@
       <input id="workerName" type="text" maxlength="24" placeholder="Karya">
     </div>
     <div class="field">
-      <label for="groqKey">Groq API key <small>(optional)</small></label>
-      <div class="key-row">
-        <input id="groqKey" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off">
-        <button type="button" class="btn btn-ghost btn-sm" id="toggleKey">Show</button>
-      </div>
-      <small class="hint">Optional — the server key is used if set. A personal key stays only in this browser and is sent only to api.groq.com.</small>
+      <details class="adv">
+        <summary>Advanced — custom API key (optional)</summary>
+        <div class="key-row">
+          <input id="groqKey" type="password" placeholder="Paste key" spellcheck="false" autocomplete="off" aria-label="Custom API key (optional)">
+          <button type="button" class="btn btn-ghost btn-sm" id="toggleKey">Show</button>
+        </div>
+        <small class="hint">Not needed — Karya AI works without it. If you add one, it is saved only in this browser.</small>
+      </details>
     </div>
     <div class="field">
       <label for="groqModel">Chat model</label>
       <select id="groqModel">
-        <option value="openai/gpt-oss-120b">GPT-OSS 120B (recommended)</option>
-        <option value="openai/gpt-oss-20b">GPT-OSS 20B (fastest)</option>
-        <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (preview)</option>
+        <option value="openai/gpt-oss-120b">Karya Pro (recommended)</option>
+        <option value="openai/gpt-oss-20b">Karya Fast (fastest)</option>
+        <option value="qwen/qwen3.8-27b">Karya Ultra (preview)</option>
       </select>
     </div>
     <div class="field">

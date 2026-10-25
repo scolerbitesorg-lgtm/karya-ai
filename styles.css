@@ -379,3 +379,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .hero-chat b{display:block;font-size:15px}
 .hero-chat small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .hero-chat-go{margin-left:auto;flex:none;color:var(--muted)}
+
+/* Settings → Advanced (optional custom key) */
+.adv > summary { cursor: pointer; font-size: 13px; opacity: .8; padding: 4px 0 8px; }
+.adv .key-row { margin-bottom: 6px; }
