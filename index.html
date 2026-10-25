@@ -214,16 +214,6 @@
       <input id="workerName" type="text" maxlength="24" placeholder="Karya">
     </div>
     <div class="field">
-      <details class="adv">
-        <summary>Advanced — custom API key (optional)</summary>
-        <div class="key-row">
-          <input id="groqKey" type="password" placeholder="Paste key" spellcheck="false" autocomplete="off" aria-label="Custom API key (optional)">
-          <button type="button" class="btn btn-ghost btn-sm" id="toggleKey">Show</button>
-        </div>
-        <small class="hint">Not needed — Karya AI works without it. If you add one, it is saved only in this browser.</small>
-      </details>
-    </div>
-    <div class="field">
       <label for="groqModel">Chat model</label>
       <select id="groqModel">
         <option value="openai/gpt-oss-120b">Karya Pro (recommended)</option>
@@ -240,12 +230,10 @@
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost btn-sm" id="testKey">Test key</button>
       <button class="btn btn-ghost btn-sm danger" id="clearHistory">Clear history</button>
       <button class="btn btn-ghost btn-sm" data-prem-reset>Reset premium (demo)</button>
       <button class="btn btn-primary" id="saveSettings">Save</button>
     </div>
-    <p class="hint" id="keyStatus" role="status"></p>
   </div>
 </div>
 

@@ -649,8 +649,9 @@ async function sendChat(text) {
     }
   } catch (e) {
     const bad = e.status === 401 || e.status === 403;
-    tb.innerHTML = md(bad ? "⚠️ Your custom key was rejected. Check it in **Settings → Advanced** — meanwhile I'm in offline mode." : `⚠️ Live AI is unreachable right now (network). Answering in offline mode:`);
-    if (!bad) { const r = cannedReply(text); const reply = typeof r === "string" ? r : r.text; const d = addMsg("bot", reply, r.task); chatLog.push({ role: "assistant", content: reply }); }
+    if (bad) { settings.key = ""; save(LS.settings, settings); updateChatMode(); }
+    tb.innerHTML = md(`⚠️ Live AI is unreachable right now. Answering in quick mode:`);
+    { const r = cannedReply(text); const reply = typeof r === "string" ? r : r.text; const d = addMsg("bot", reply, r.task); chatLog.push({ role: "assistant", content: reply }); }
   }
   chatBusy = false;
   $("#chatBody").scrollTop = 1e9;
@@ -675,22 +676,11 @@ function renderSuggest() {
 
 /* ---------- settings ---------- */
 function openSettings() {
-  $("#workerName").value = settings.name; $("#groqKey").value = settings.key; $("#groqModel").value = settings.model; $("#speedSel").value = settings.speed;
+  $("#workerName").value = settings.name; $("#groqModel").value = settings.model; $("#speedSel").value = settings.speed;
   if (!$("#groqModel").value) $("#groqModel").value = DEFAULTS.model;
-  $("#keyStatus").textContent = settings.key ? "Live AI chat is on." : "Live chat works without a key.";
   $("#settingsModal").hidden = false; setTimeout(() => $("#workerName").focus(), 50);
 }
 function closeSettings() { $("#settingsModal").hidden = true; }
-async function testKey() {
-  const key = $("#groqKey").value.trim(); const st = $("#keyStatus");
-  if (!key) { st.textContent = "Paste a key first."; return; }
-  st.textContent = "Testing…";
-  try {
-    const r = await fetch("https://api.groq.com/openai/v1/models", { headers: { Authorization: "Bearer " + key } });
-    st.textContent = r.ok ? "✅ Key works. Save to enable live chat." : r.status === 401 ? "❌ Key rejected (401)." : "⚠️ Check failed (" + r.status + ").";
-  } catch (e) { st.textContent = "⚠️ Couldn't check the key from this network."; }
-}
-
 /* ---------- wire up ---------- */
 function init() {
   initEls();
@@ -720,11 +710,9 @@ function init() {
   $("#openSettings").addEventListener("click", openSettings);
   $("#settingsClose").addEventListener("click", closeSettings);
   $("#settingsModal").addEventListener("click", (e) => { if (e.target.id === "settingsModal") closeSettings(); });
-  $("#toggleKey").addEventListener("click", () => { const i = $("#groqKey"); const show = i.type === "password"; i.type = show ? "text" : "password"; $("#toggleKey").textContent = show ? "Hide" : "Show"; });
-  $("#testKey").addEventListener("click", testKey);
   $("#saveSettings").addEventListener("click", () => {
-    settings = { theme: settings.theme, workerModel: settings.workerModel, name: $("#workerName").value.trim() || "Karya", key: $("#groqKey").value.trim(), model: $("#groqModel").value, speed: $("#speedSel").value };
-    save(LS.settings, settings); updateChatMode(); closeSettings(); toast(settings.key ? "Saved · Live AI chat on ✨" : "Saved ✓");
+    settings = { theme: settings.theme, workerModel: settings.workerModel, name: $("#workerName").value.trim() || "Karya", key: settings.key || "", model: $("#groqModel").value, speed: $("#speedSel").value };
+    save(LS.settings, settings); updateChatMode(); closeSettings(); toast("Saved ✓");
   });
   $("#clearHistory").addEventListener("click", () => { history = []; save(LS.history, history); renderHistory(); toast("History cleared"); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSettings(); closeChat(); closeSidebar(); } });

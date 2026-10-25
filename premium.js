@@ -45,7 +45,13 @@ body.is-premium .prem-badge{display:inline-flex}
 @keyframes pwspin{to{transform:rotate(360deg)}}
 .pw-ok{font-size:44px;line-height:1;margin-bottom:8px}
 .pw-wait b{display:block;font-size:17px}.pw-wait small{display:block;margin-top:6px;color:var(--muted,#b9b7cf)}
-@media (prefers-reduced-motion:reduce){.pw-spin{animation-duration:2.4s}}`;
+@media (prefers-reduced-motion:reduce){.pw-spin{animation-duration:2.4s}}
+.pw-chatfree{margin:0 0 12px;padding:10px 12px;border-radius:14px;text-align:center;font-weight:800;font-size:15px;color:#34d399;background:rgba(52,211,153,.10);border:1px solid rgba(52,211,153,.35)}
+.pw-plan+.pw-plan{margin-top:12px}
+.pw-plan.pw-free{background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line2,rgba(255,255,255,.14))}
+.pw-plan li.no::before{content:"✕ ";color:#f87171}
+.pw-plan li.no{opacity:.75}
+.pw-cur{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--muted,#b9b7cf)}`;
   function ensureStyle() { if (document.getElementById("pw-css")) return; const st = document.createElement("style"); st.id = "pw-css"; st.textContent = css; document.head.appendChild(st); }
   function sync() {
     document.body.classList.toggle("is-premium", isOn());
@@ -84,16 +90,24 @@ body.is-premium .prem-badge{display:inline-flex}
   const top = (t) => `<div class="pw-top"><h3>${t}</h3><button type="button" class="pw-x" aria-label="Close">✕</button></div>`;
   const wireX = () => { const x = card().querySelector(".pw-x"); if (x) x.addEventListener("click", close); };
   function planStep() {
-    card().innerHTML = `${top("⭐ Karya Premium")}
-      <div class="pw-plan"><div class="pp-h"><b>Premium</b><span class="pw-price">₹99<small>/month (demo)</small></span></div>
-      <ul><li>Har task ka full result unlock</li><li>Videos, websites, designs download</li><li>Fast runs, priority Workspace</li><li>Saare models & Projects</li></ul></div>
-      <button type="button" class="pw-btn pw-main" data-next>Continue →</button>
+    const pro = isOn();
+    card().innerHTML = `${top("⭐ Karya Plans")}
+      <div class="pw-chatfree">Chat hamesha free hai 💬</div>
+      <div class="pw-plan pw-free"><div class="pp-h"><b>Free trial</b><span class="pw-price">₹0</span></div>
+      <ul><li>Task progress dekh sakte ho</li><li>Free &amp; limited chat</li><li class="no">Final result locked 🔒</li></ul>
+      ${pro ? "" : '<span class="pw-cur">Current plan</span>'}</div>
+      <div class="pw-plan pw-pro"><div class="pp-h"><b>⭐ Pro</b><span class="pw-price">₹99<small>/month (demo)</small></span></div>
+      <ul><li>Task ka result preview</li><li>Task execute / complete</li><li>Unlimited chat</li></ul>
+      ${pro ? '<span class="pw-cur">Current plan ✓</span>' : ""}</div>
+      ${pro ? '<button type="button" class="pw-btn pw-main" data-done>Done</button>' : '<button type="button" class="pw-btn pw-main" data-next>Get Pro — ₹99 →</button>'}
       <small class="pw-demo">Demo payment — koi paisa nahi katega</small>`;
-    wireX(); card().querySelector("[data-next]").addEventListener("click", payStep);
+    wireX();
+    const nx = card().querySelector("[data-next]"); if (nx) nx.addEventListener("click", payStep);
+    const dn = card().querySelector("[data-done]"); if (dn) dn.addEventListener("click", close);
   }
   function payStep() {
     card().innerHTML = `${top("Checkout")}
-      <div class="pw-sum"><span>Karya Premium · 1 month</span><b>₹99</b></div>
+      <div class="pw-sum"><span>Karya Pro · 1 month (demo)</span><b>₹99</b></div>
       <div class="pw-opt sel" role="radio" aria-checked="true"><span class="ic">UPI</span><span><b>UPI</b><br><small>Any UPI app</small></span><span class="rd"></span></div>
       <div class="pw-opt dis" role="radio" aria-checked="false" aria-disabled="true"><span class="ic">💳</span><span><b>Card</b><br><small>Coming soon</small></span><span class="rd"></span></div>
       <button type="button" class="pw-btn pw-main" data-pay>Pay ₹99</button>
@@ -104,7 +118,7 @@ body.is-premium .prem-badge{display:inline-flex}
     sheet._busy = true;
     card().innerHTML = `<div class="pw-wait"><div class="pw-spin" aria-hidden="true"></div><b>Verifying payment…</b><small>Demo — koi paisa nahi katega</small></div>`;
     setTimeout(() => {
-      card().innerHTML = `<div class="pw-wait"><div class="pw-ok">✅</div><b>Payment verified (demo)</b><small>⭐ Premium unlocked</small></div>`;
+      card().innerHTML = `<div class="pw-wait"><div class="pw-ok">✅</div><b>Payment verified (demo)</b><small>⭐ Pro unlocked</small></div>`;
       set(true);
       setTimeout(() => { sheet._busy = false; close(); }, 1300);
     }, 2500);
