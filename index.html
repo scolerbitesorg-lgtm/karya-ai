@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Karya AI — The AI worker that gets anything done</title>
+<meta name="description" content="Karya AI is your premium autonomous AI worker. Type any task — videos, websites, research, posts — and watch it get done.">
+<meta name="theme-color" content="#07070d">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+<header class="topbar">
+  <button class="icon-btn only-mobile" id="historyToggle" aria-label="Open task history">
+    <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+  </button>
+  <a href="#top" class="brand" aria-label="Karya AI home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">Karya<span class="brand-ai">AI</span></span>
+  </a>
+  <nav class="topnav" aria-label="Main">
+    <a href="#workspace">Workspace</a>
+    <a href="chat.html" class="nav-chat">Chat</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#pricing">Pricing</a>
+  </nav>
+  <div class="top-actions">
+    <span class="pro-badge" title="Karya Pro is active">PRO</span>
+    <button class="icon-btn" id="themeToggle" aria-label="Switch light / dark mode">
+      <svg class="i-moon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <button class="icon-btn" id="openChatTop" aria-label="Chat with your worker">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 5h16v11H9l-5 4z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="icon-btn" id="openSettings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="layout" id="top">
+  <aside class="sidebar" id="sidebar" aria-label="Task history">
+    <div class="sidebar-head">
+      <button class="btn btn-ghost new-task" id="newTaskBtn"><span aria-hidden="true">＋</span> New task</button>
+      <button class="icon-btn only-mobile" id="historyClose" aria-label="Close history">✕</button>
+    </div>
+    <p class="side-label">Projects</p>
+    <label class="sr-only" for="historySearch">Search projects</label>
+    <input class="side-search" id="historySearch" type="search" placeholder="Search projects…">
+    <ul class="history" id="historyList"></ul>
+    <p class="history-empty" id="historyEmpty">No projects yet. Every task you run is saved here.</p>
+    <div class="side-card">
+      <div class="side-card-row"><span class="dot dot-live"></span> Worker online</div>
+      <div class="usage"><span>Compute credits</span><b id="creditsLabel">∞ Pro</b></div>
+      <div class="usage-bar"><i style="width:72%"></i></div>
+      <small>42 tools connected · Priority GPU lane</small>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="main" id="main">
+    <!-- HERO -->
+    <section class="hero" id="heroSection" aria-labelledby="heroTitle">
+      <div id="workspace" class="anchor"></div>
+      <div class="eyebrow"><span class="dot dot-live"></span> Autonomous worker · v4.2 Ultra</div>
+      <h1 id="heroTitle">Type any task.<br><span class="grad-text">Karya gets it done.</span></h1>
+      <p class="hero-sub">Your premium AI worker plans, creates, renders and publishes — videos, websites, research, posts, code. Just describe it.</p>
+
+      <form class="composer" id="composer" autocomplete="off">
+        <label for="taskInput" class="sr-only">Describe your task</label>
+        <textarea id="taskInput" rows="3" maxlength="600" placeholder="e.g. Make a 60-second video about the Indian Army and upload it to YouTube"></textarea>
+        <div class="composer-bar">
+          <div class="composer-tools">
+            <label class="tool-pill model-pill"><span aria-hidden="true">⚡</span><span class="sr-only">Worker model</span>
+              <select id="modelSel" aria-label="Worker model">
+                <option value="ultra">Karya Ultra 4.2</option>
+                <option value="pro">Karya Pro 4</option>
+                <option value="flash">Karya Flash</option>
+                <option value="vision">Karya Vision X</option>
+              </select></label>
+            <span class="tool-pill tool-static"><span aria-hidden="true">🔗</span> 42 tools</span>
+          </div>
+          <button type="submit" class="btn btn-primary run-btn" id="runBtn">
+            <span>Run task</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </form>
+      <div class="chips" id="chips" aria-label="Example tasks"></div>
+      <a class="hero-chat" href="chat.html">
+        <span class="hero-chat-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 5h16v11H9l-5 4z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg></span>
+        <span><b>Chat with Karya AI</b><small>Fast, full-screen chat · English, Hinglish, हिंदी</small></span>
+        <svg class="hero-chat-go" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+
+      <div class="trust">
+        <div><b>2.4M+</b><span>tasks completed</span></div>
+        <div><b>42</b><span>tools connected</span></div>
+        <div><b>11 s</b><span>avg. plan time</span></div>
+      </div>
+    </section>
+
+    <!-- RUN VIEW -->
+    <section class="run" id="runSection" hidden aria-labelledby="runTitle">
+      <div class="run-head card">
+        <div class="run-head-top">
+          <span class="status-pill" id="runStatus"><span class="spinner" aria-hidden="true"></span> Working</span>
+          <span class="run-type" id="runType">Video</span>
+          <span class="run-time" id="runTimer">00:00</span>
+        </div>
+        <h2 id="runTitle" class="run-title"></h2>
+        <div class="progress" role="progressbar" aria-label="Task progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar"><i id="progressFill"></i></div>
+        <div class="run-meta"><span id="progressText">0%</span><span id="stepCounter">Planning…</span><span id="etaText">ETA —</span></div>
+      </div>
+
+      <div class="card tools-card">
+        <div class="card-title"><span>🔧 Agent tools</span><small id="toolsCount">0 active</small></div>
+        <div class="tools-grid" id="toolsGrid"></div>
+      </div>
+      <div class="run-grid">
+        <div class="card timeline-card">
+          <div class="card-title"><span>Execution plan</span><small id="agentCount">— steps</small></div>
+          <ol class="timeline" id="timeline"></ol>
+        </div>
+        <div class="run-side">
+          <div class="card console-card">
+            <div class="card-title"><span><i class="dot dot-live"></i> Live console</span><small>worker-07 · in-region</small></div>
+            <div class="console" id="console" role="log" aria-live="polite"></div>
+          </div>
+          <div id="artifacts" class="artifacts"></div>
+        </div>
+      </div>
+      <div class="run-actions" id="runActions" hidden>
+        <button class="btn btn-primary" id="runAnother">Run another task</button>
+        <button class="btn btn-ghost" id="askWorker">Ask the worker</button>
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section class="section" id="capabilities" aria-labelledby="capTitle">
+      <h2 id="capTitle" class="section-title">One worker. <span class="grad-text">Every job.</span></h2>
+      <p class="section-sub">Karya chains specialised agents together and runs the whole pipeline end-to-end.</p>
+      <div class="cap-grid" id="capGrid"></div>
+      <div class="marquee" aria-label="Connected tools"><div class="marquee-track" id="marquee"></div></div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="section" id="pricing" aria-labelledby="priceTitle">
+      <h2 id="priceTitle" class="section-title">Simple, <span class="grad-text">premium</span> pricing</h2>
+      <p class="section-sub">Your workspace is on <b>Pro</b>. Upgrade or downgrade any time.</p>
+      <div class="billing-toggle" role="group" aria-label="Billing period">
+        <button class="active" data-bill="m">Monthly</button><button data-bill="y">Yearly <em>−20%</em></button>
+      </div>
+      <div class="price-grid">
+        <article class="price-card">
+          <h3>Starter</h3><p class="price"><b data-m="₹0" data-y="₹0">₹0</b><span>/mo</span></p>
+          <ul><li>20 tasks / month</li><li>Standard queue</li><li>720p video renders</li><li>Community support</li></ul>
+          <button class="btn btn-ghost plan-btn" data-plan="Starter">Downgrade</button>
+        </article>
+        <article class="price-card featured">
+          <span class="ribbon">Current plan</span>
+          <h3>Pro</h3><p class="price"><b data-m="₹1,499" data-y="₹1,199">₹1,499</b><span>/mo</span></p>
+          <ul><li>Unlimited tasks</li><li>Priority GPU lane</li><li>4K renders + auto-upload</li><li>All 42 integrations</li><li>Worker chat</li></ul>
+          <button class="btn btn-primary plan-btn" data-plan="Pro">Active ✓</button>
+        </article>
+        <article class="price-card">
+          <h3>Agency</h3><p class="price"><b data-m="₹7,999" data-y="₹6,399">₹7,999</b><span>/mo</span></p>
+          <ul><li>10 parallel workers</li><li>Team workspaces</li><li>White-label delivery</li><li>Dedicated success manager</li></ul>
+          <button class="btn btn-ghost plan-btn" data-plan="Agency">Talk to sales</button>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="brand small"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">Karya<span class="brand-ai">AI</span></span></div>
+      <p>© 2026 Karya AI · Made in India 🇮🇳</p>
+      <p class="demo-note">Demo build — task runs are simulated for preview purposes.</p>
+    </footer>
+  </main>
+</div>
+
+<!-- CHAT -->
+<button class="chat-fab" id="chatFab" aria-label="Chat with Karya">
+  <span class="fab-ring" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+</button>
+<section class="chat" id="chat" aria-label="Chat with your worker" hidden>
+  <header class="chat-head">
+    <div class="chat-avatar" aria-hidden="true"></div>
+    <div class="chat-who"><b>Karya</b><small id="chatMode"><span class="dot dot-live"></span> Online</small></div>
+    <button class="icon-btn" id="chatClear" aria-label="Clear chat" title="Clear chat">⟲</button>
+    <button class="icon-btn" id="chatClose" aria-label="Close chat">✕</button>
+  </header>
+  <div class="chat-body" id="chatBody" role="log" aria-live="polite"></div>
+  <div class="chat-suggest" id="chatSuggest"></div>
+  <form class="chat-form" id="chatForm" autocomplete="off">
+    <label for="chatInput" class="sr-only">Message Karya</label>
+    <input id="chatInput" type="text" maxlength="800" placeholder="Message your worker…">
+    <button class="btn btn-primary send-btn" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z" fill="currentColor"/></svg>
+    </button>
+  </form>
+</section>
+
+<!-- SETTINGS -->
+<div class="modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="modal-card">
+    <div class="modal-head"><h2 id="settingsTitle">Settings</h2><button class="icon-btn" id="settingsClose" aria-label="Close settings">✕</button></div>
+    <div class="field">
+      <label for="workerName">Worker name</label>
+      <input id="workerName" type="text" maxlength="24" placeholder="Karya">
+    </div>
+    <div class="field">
+      <label for="groqKey">Groq API key <small>(for live chat)</small></label>
+      <div class="key-row">
+        <input id="groqKey" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off">
+        <button type="button" class="btn btn-ghost btn-sm" id="toggleKey">Show</button>
+      </div>
+      <small class="hint">Stored only in this browser (localStorage). Never sent anywhere except api.groq.com.</small>
+    </div>
+    <div class="field">
+      <label for="groqModel">Chat model</label>
+      <select id="groqModel">
+        <option value="openai/gpt-oss-120b">GPT-OSS 120B (recommended)</option>
+        <option value="openai/gpt-oss-20b">GPT-OSS 20B (fastest)</option>
+        <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (preview)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="speedSel">Run speed</label>
+      <select id="speedSel">
+        <option value="1">Realistic</option>
+        <option value="2.2">Fast</option>
+        <option value="4">Turbo</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="testKey">Test key</button>
+      <button class="btn btn-ghost btn-sm danger" id="clearHistory">Clear history</button>
+      <button class="btn btn-primary" id="saveSettings">Save</button>
+    </div>
+    <p class="hint" id="keyStatus" role="status"></p>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="script.js"></script>
+</body>
+</html>

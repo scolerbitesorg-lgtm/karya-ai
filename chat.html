@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Chat — Karya AI</title>
+<meta name="description" content="Chat with Karya AI — fast, smooth, in your language.">
+<meta name="theme-color" content="#07070d">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="chat.css">
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Chats">
+    <div class="side-top">
+      <a href="index.html" class="brand" aria-label="Karya AI home"><span class="brand-mark" aria-hidden="true"></span><span class="brand-name">Karya<span class="brand-ai">AI</span></span></a>
+      <button class="icon-btn only-mobile" id="sideClose" aria-label="Close chat list">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <button class="new-chat" id="newChat"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>New chat</button>
+    <div class="side-label">Recent</div>
+    <nav class="chat-list" id="chatList" aria-label="Saved chats"></nav>
+    <div class="side-foot">
+      <a class="side-link" href="index.html"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round"/></svg>Workspace</a>
+      <button class="side-link" id="sideSettings"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/></svg>Settings</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="main">
+    <header class="bar">
+      <button class="icon-btn only-mobile" id="sideOpen" aria-label="Open chat list">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+      </button>
+      <button class="model-pill" id="modelPill" aria-label="Chat model and settings"><span class="dot" id="statusDot"></span><span id="modelLabel">Karya AI</span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button>
+      <div class="bar-actions">
+        <button class="icon-btn" id="barNew" aria-label="New chat" title="New chat"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 20H5a1 1 0 0 1-1-1v-7M15 4l5 5-9 9H6v-5z" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg></button>
+        <button class="icon-btn" id="barSettings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="10" cy="17" r="2.3" stroke="currentColor" stroke-width="2" fill="none"/></svg></button>
+        <a class="icon-btn" href="index.html" aria-label="Back to workspace" title="Workspace"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></a>
+      </div>
+    </header>
+
+    <div class="scroller" id="scroller">
+      <div class="thread" id="thread" role="log" aria-live="polite" aria-relevant="additions"></div>
+    </div>
+    <button class="jump" id="jump" aria-label="Scroll to latest" hidden><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+
+    <form class="dock" id="composer" autocomplete="off">
+      <div class="composer">
+        <label for="input" class="sr-only">Message Karya AI</label>
+        <textarea id="input" rows="1" placeholder="Message Karya AI…" enterkeyhint="send"></textarea>
+        <button type="submit" class="send" id="send" aria-label="Send message" disabled>
+          <svg class="i-send" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="i-stop" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2.5" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <p class="fine">Karya AI can make mistakes. Check important info.</p>
+    </form>
+  </main>
+
+  <aside class="ws" id="ws" aria-label="Workspace" aria-hidden="true" inert>
+    <header class="ws-bar">
+      <button type="button" class="ws-min" id="wsMin" aria-label="Minimise workspace and go back to chat"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Chat</span></button>
+      <div class="ws-title"><b><span class="ws-glyph" aria-hidden="true">🛠️</span>Workspace</b><small id="wsSub">Karya Agent</small></div>
+      <span class="ws-live run" id="wsLive">● Live</span>
+      <button type="button" class="icon-btn ws-x" id="wsClose" aria-label="Close workspace" title="Close workspace"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </header>
+    <div class="ws-body" id="wsBody"></div>
+  </aside>
+</div>
+
+<div class="modal" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="modal-card">
+    <div class="modal-head"><h2 id="setTitle">Chat settings</h2><button class="icon-btn" id="setClose" aria-label="Close settings"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+    <div class="field">
+      <label for="keyInput">Groq API key</label>
+      <div class="key-row">
+        <input id="keyInput" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off" autocapitalize="off">
+        <button type="button" class="btn btn-ghost" id="keyShow">Show</button>
+        <button type="button" class="btn btn-ghost" id="keyTest">Test</button>
+      </div>
+      <small class="hint">Saved only in this browser. It is sent only to api.groq.com. Get a free key at console.groq.com/keys.</small>
+      <p class="status" id="keyStatus" role="status"></p>
+    </div>
+    <div class="field">
+      <label for="modelSel">Model</label>
+      <select id="modelSel"></select>
+    </div>
+    <div class="field">
+      <label for="tempIn">Creativity <small id="tempVal">0.7</small></label>
+      <input id="tempIn" type="range" min="0" max="1.5" step="0.1" value="0.7">
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost danger" id="clearAll">Delete all chats</button>
+      <button type="button" class="btn btn-primary" id="setSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="engine.js"></script>
+<script src="chat.js"></script>
+</body>
+</html>
