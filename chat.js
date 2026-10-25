@@ -254,8 +254,8 @@ async function readError(res) {
   try { const j = await res.json(); msg = (j.error && j.error.message) || ""; code = (j.error && (j.error.code || j.error.type)) || ""; } catch (e) {}
   const s = res.status, ra = parseInt(res.headers.get("retry-after") || "", 10);
   if (s === 401) return new GroqError("auth", msg);
+  if (s === 429) return new GroqError("rate", msg, { retryAfter: isNaN(ra) ? null : ra }); // any 429 = limit card (checked before billing words: a quota message mentions upgrade/billing)
   if (/organization_delinquent|overdue|billing|payment|organization.*restricted/i.test(msg + " " + code)) return new GroqError("billing", msg);
-  if (s === 429) return new GroqError("rate", msg, { retryAfter: isNaN(ra) ? null : ra });
   if (s === 413 || /context|too large|reduce the length|tokens per minute/i.test(msg)) return new GroqError("toolong", msg);
   if (s === 404 || /model_not_found|decommission|does not exist|not have access to model|model.*(blocked|terminated|not available)/i.test(msg + " " + code)) return new GroqError("model", msg);
   if (s === 403) return new GroqError("forbidden", msg);

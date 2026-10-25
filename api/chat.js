@@ -5,6 +5,8 @@
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]; // the models the site offers
 const DEFAULT_MODEL = MODELS[0];
+const FALLBACK = { "openai/gpt-oss-20b": "openai/gpt-oss-120b", "openai/gpt-oss-120b": "openai/gpt-oss-20b" }; // used once when a model's quota is spent
+const scrub = (s) => String(s || "").replace(/https?:\/\/\S+/g, "").replace(/\b(org|organization)[_ ]\w+/gi, "").replace(/\b(groq|openai|meta|llama|qwen|gpt-oss)[\w.\/-]*/gi, "the AI service").trim();
 const MAX_TOKENS = 1024;
 const MAX_MESSAGES = 40;
 const MAX_CHARS_PER_MESSAGE = 16000;
@@ -87,19 +89,25 @@ module.exports = async function handler(req, res) {
   const { body, err } = clean(input);
   if (err) return fail(res, 400, err);
 
+  const call = (b) => fetch(GROQ_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key }, body: JSON.stringify(b) });
   let up;
   try {
-    up = await fetch(GROQ_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key }, body: JSON.stringify(body) });
+    up = await call(body);
+    // A model's own quota ran out (per-minute / per-day): try the other model once before telling the user.
+    if (up.status === 429) {
+      const alt = FALLBACK[body.model];
+      if (alt) { await up.text().catch(() => {}); const r2 = await call(Object.assign({}, body, { model: alt })); up = r2; }
+    }
   } catch (e) { return fail(res, 502, "Could not reach the AI service."); }
 
-  if (!up.ok || !body.stream || !up.body) { // errors and non-stream replies: pass Groq's status + JSON through
-    const text = await up.text();
-    res.statusCode = up.status;
-    res.setHeader("Content-Type", up.headers.get("content-type") || "application/json");
-    res.setHeader("Cache-Control", "no-store");
-    const ra = up.headers.get("retry-after"); if (ra) res.setHeader("Retry-After", ra);
-    return res.end(text);
+  if (!up.ok) { // errors: status kept, provider words never reach the browser (vendor/org names scrubbed)
+    let msg = ""; try { const j = JSON.parse(await up.text()); msg = (j.error && j.error.message) || ""; } catch (e) {}
+    const ra = up.headers.get("retry-after");
+    const neutral = { 401: "Service unavailable.", 403: "Request refused.", 404: "Model unavailable.", 413: "Request too large.", 429: "Rate limit reached. Please try again later." };
+    const words = up.status === 400 ? scrub(msg).slice(0, 300) || "Bad request." : neutral[up.status] || "The AI service had a problem.";
+    return fail(res, up.status, words, ra ? { "Retry-After": ra } : null);
   }
+  if (!body.stream || !up.body) { const text = await up.text(); res.statusCode = up.status; res.setHeader("Content-Type", up.headers.get("content-type") || "application/json"); res.setHeader("Cache-Control", "no-store"); return res.end(text); }
 
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
