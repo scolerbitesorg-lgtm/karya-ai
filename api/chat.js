@@ -5,6 +5,7 @@
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "qwen/qwen3.8-27b"]; // the models the site offers
 const DEFAULT_MODEL = MODELS[0];
+const CHAIN = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "llama-3.1-8b-instant", "llama-3.3-70b-versatile", "meta-llama/llama-4-scout-17b-16e-instruct", "qwen/qwen3-32b", "moonshotai/kimi-k2-instruct"]; // fallback order when a model's quota is spent
 const FALLBACK = { "openai/gpt-oss-20b": "openai/gpt-oss-120b", "openai/gpt-oss-120b": "openai/gpt-oss-20b" }; // used once when a model's quota is spent
 const scrub = (s) => String(s || "").replace(/https?:\/\/\S+/g, "").replace(/\b(org|organization)[_ ]\w+/gi, "").replace(/\b(groq|openai|meta|llama|qwen|gpt-oss)[\w.\/-]*/gi, "the AI service").trim();
 const MAX_TOKENS = 1024;
@@ -12,7 +13,7 @@ const MAX_MESSAGES = 40;
 const MAX_CHARS_PER_MESSAGE = 16000;
 const MAX_TOTAL_CHARS = 48000;
 const MAX_BODY_BYTES = 200 * 1024;
-const RATE = { perMinute: 20, perDay: 400 }; // per IP, per warm instance (best effort)
+const RATE = { perMinute: 60, perDay: 100000 }; // per IP, per warm instance (best effort)
 
 const hits = new Map(); // ip -> { m: [timestamps in last minute], d: count, day }
 function limited(ip) {
@@ -92,11 +93,14 @@ module.exports = async function handler(req, res) {
   const call = (b) => fetch(GROQ_URL, { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key }, body: JSON.stringify(b) });
   let up;
   try {
-    up = await call(body);
-    // A model's own quota ran out (per-minute / per-day): try the other model once before telling the user.
-    if (up.status === 429) {
-      const alt = FALLBACK[body.model];
-      if (alt) { await up.text().catch(() => {}); const r2 = await call(Object.assign({}, body, { model: alt })); up = r2; }
+    // Try the requested model, then every other model in the chain (each has its own quota) until one answers.
+    const chain = [body.model].concat(CHAIN.filter((m) => m !== body.model));
+    for (let i = 0; i < chain.length; i++) {
+      const b2 = Object.assign({}, body, { model: chain[i] });
+      if (!/^(openai\/|qwen\/)/.test(chain[i])) { delete b2.reasoning_effort; delete b2.include_reasoning; }
+      up = await call(b2);
+      if (up.ok || ![429, 404, 400, 503].includes(up.status) || i === chain.length - 1) break;
+      await up.text().catch(() => {});
     }
   } catch (e) { return fail(res, 502, "Could not reach the AI service."); }
 
