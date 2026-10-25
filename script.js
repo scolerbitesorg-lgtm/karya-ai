@@ -417,7 +417,7 @@ async function runTask(task) {
     setStep(i, "running"); setTools(s, "running");
     if (window.innerWidth >= 900) els.timeline.children[i].scrollIntoView({ block: "nearest", behavior: "smooth" });
     log(`▶ ${s.name}`, "sys");
-    const upd = s.art && Artifacts[s.art] ? Artifacts[s.art](plan, els.artifacts) : null;
+    const upd = s.art && Artifacts[s.art] && isPro() ? Artifacts[s.art](plan, els.artifacts) : null; // free: progress only, no output previews
     const events = [];
     s.subs.forEach((t, k) => events.push({ at: (k + 0.6) / (s.subs.length + 0.4), kind: "sub", t }));
     (s.logs || []).forEach((t, k) => events.push({ at: (k + 0.3) / ((s.logs || []).length + 0.5), kind: "log", t }));
@@ -470,8 +470,8 @@ function renderResult(plan) {
   if (R.kind === "yt") extra = `<div class="yt-card"><div class="yt-thumb" style="${art(plan.seed + plan.topic, 7)}"><em>0:59</em></div><div class="yt-meta"><b>${esc(R.ytTitle)}</b><small>Your channel · Public · just now</small></div></div>`;
   el.innerHTML = `<div class="result-head"><div class="result-ico">${R.icon}</div><div><b>${esc(R.title)}</b><small>${esc(R.sub)}</small></div></div>${extra}<div class="result-link"><span>${esc(R.link)}</span><button class="btn btn-ghost btn-sm" data-copy="${esc(R.link)}">Copy</button></div>`;
   els.artifacts.prepend(el);
-  if (window.KaryaPremium) KaryaPremium.lock(el, plan); // demo paywall
   $("[data-copy]", el).addEventListener("click", (e) => { const v = e.currentTarget.dataset.copy; (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast("Copied ✓"), () => toast(v)); });
+  if (window.KaryaPremium) KaryaPremium.lock(el, plan); // Pro locked: no result / preview on free
   setTimeout(() => el.scrollIntoView({ block: "nearest", behavior: "smooth" }), 200);
 }
 function replay(entry) {
@@ -480,7 +480,7 @@ function replay(entry) {
   current = { plan, token: runToken, id: entry.id, done: true };
   closeSidebar();
   showRunView(plan);
-  plan.steps.forEach((s, i) => { s.subs.forEach((t) => addSub(i, t, true)); setStep(i, "done"); setTools(s, "done"); if (s.art && Artifacts[s.art]) Artifacts[s.art](plan, els.artifacts)(1); });
+  plan.steps.forEach((s, i) => { s.subs.forEach((t) => addSub(i, t, true)); setStep(i, "done"); setTools(s, "done"); if (s.art && Artifacts[s.art] && isPro()) Artifacts[s.art](plan, els.artifacts)(1); });
   els.runTimer.textContent = entry.elapsed || "00:00";
   log(`Restored run ${entry.id.toUpperCase()} from history`, "sys");
   plan.steps.forEach((s) => log(`✓ ${s.name}`, "ok"));
@@ -563,7 +563,7 @@ function cannedReply(text) {
   if (/^(hi|hello|hey|hii+|namaste|yo|hlo|hola)\b/.test(t)) return hi || /namaste/.test(t) ? `Namaste! 👋 Main ${n} hoon — tumhara premium AI worker. Koi bhi task likho, main plan karke poora kar dunga.` : `Hey! 👋 I'm ${n}, your premium AI worker. Tell me any task and I'll plan it and get it done end-to-end.`;
   if (/(who are you|kaun ho|what are you|tum kya ho|about you)/.test(t)) return hi ? `Main ${n} hoon — ek autonomous AI worker. Video, website, design, research, posts, code — sab khud karta hoon, 42 tools ke saath. 🚀` : `I'm ${n} — an autonomous AI worker. Videos, websites, designs, research, posts and code, all handled end-to-end across 42 connected tools. 🚀`;
   if (/(what can you do|kya kar sakte|kya kr skte|features|capabilit|help)/.test(t)) return hi ? "Main ye sab kar sakta hoon:\n• 🎬 Video bana ke YouTube pe upload\n• 🌐 Website bana ke live\n• 🎨 Poster / logo / thumbnail\n• 📊 Research report\n• 📣 Insta / LinkedIn posts\nBas task likho! ✨" : "Here's what I can take off your plate:\n• 🎬 Make a video and publish it to YouTube\n• 🌐 Build and deploy a website\n• 🎨 Posters, logos, thumbnails\n• 📊 Deep research reports\n• 📣 Social posts, scheduled\nJust describe the task ✨";
-  if (/(price|pricing|plan|cost|paisa|kitne ka|subscription|pro)\b/.test(t)) return isPro() ? (hi ? "Tum **⭐ Pro** pe ho — full capacity, task results unlocked." : "You're on **⭐ Pro** — full capacity, task results unlocked.") : (hi ? "Tum **Free** plan pe ho (5% capacity). ⭐ Pro sirf ₹99/month (demo) — advanced chat + task results. Plans neeche Pricing me hain." : "You're on the **Free** plan (5% capacity). ⭐ Pro is ₹99/month (demo) — advanced chat + task results. Plans are in Pricing below.");
+  if (/(price|pricing|plan|cost|paisa|kitne ka|subscription|pro)\b/.test(t)) return isPro() ? (hi ? "Tum **⭐ Pro** pe ho — full capacity, task results unlocked." : "You're on **⭐ Pro** — full capacity, task results unlocked.") : (hi ? "Tum **Free** plan pe ho (5% capacity). ⭐ Pro abhi temporarily locked hai — high traffic ki wajah se owner Aarav Malik ne lock kiya hai, jaldi wapas aayega. Chat free hai 💬" : "You're on the **Free** plan (5% capacity). ⭐ Pro is temporarily locked by the owner Aarav Malik due to high traffic — back soon. Chat stays free 💬");
   if (/(api key|key)\b/.test(t)) return hi ? "Koi key nahi chahiye 🙂 Karya AI seedha chat karta hai — chat ke liye upar Chat kholo." : "No key needed 🙂 Karya AI chats directly — open Chat from the top.";
   if (/(thank|thanks|shukriya|dhanyavad|thx|great|awesome|nice|mast|badhiya)/.test(t)) return hi ? "Koi baat nahi! 🙌 Aur kuch karna ho to batao." : "Anytime! 🙌 What should we tackle next?";
   if (TASKY.test(t) || t.split(/\s+/).length >= 5) {
@@ -688,7 +688,7 @@ function planUI() { // no model picker anywhere: the plan decides (free = Karya 
   const pro = isPro();
   const pill = $("#planPill"); if (pill) { pill.innerHTML = pro ? '<span aria-hidden="true">⭐</span> Karya Pro' : '<span aria-hidden="true">⚡</span> Karya Fast · 5%'; pill.classList.toggle("pro", pro); pill.title = pro ? "Pro active — full capacity" : "Free plan — 5% capacity"; }
   const cl = $("#creditsLabel"); if (cl) cl.textContent = pro ? "⭐ Pro · full" : "Free · 5%";
-  const cf = $("[data-cur-free]"), cp = $("[data-cur-pro]"); if (cf) cf.hidden = pro; if (cp) cp.hidden = !pro;
+  const cf = $("[data-cur-free]"); if (cf) cf.hidden = pro;
   const pf = $("#planFree"), pp = $("#planPro"); if (pf) pf.classList.toggle("is-current", !pro); if (pp) pp.classList.toggle("is-current", pro);
   const bf = $('.plan-btn[data-plan="free"]'), bp = $('.plan-btn[data-plan="pro"]');
   if (bf) { bf.textContent = pro ? "Free plan" : "Current plan"; bf.disabled = true; }

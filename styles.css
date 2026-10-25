@@ -248,6 +248,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .price-card li.no{opacity:.6}
 .price-card li.no::before{content:"✕";color:var(--muted)}
 .price-card.is-current:not(.featured){border-color:var(--line2)}
+.ribbon.locked{background:rgba(251,191,36,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.45)}
 .plan-btn:disabled{cursor:default;opacity:.85}
 .footer{text-align:center;padding:50px 0 10px;color:var(--dim);font-size:13px}
 .footer p{margin:6px 0}

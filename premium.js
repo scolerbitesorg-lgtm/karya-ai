@@ -1,11 +1,11 @@
-/* Karya AI — DEMO premium paywall. No real payment: nothing is sent anywhere, no UPI ID, no payment link. */
+/* Karya AI — Pro is temporarily LOCKED for everyone (owner's call: high traffic / server load).
+   Every Upgrade / Pro button opens a checkout that can never succeed: method tiles only (no card/UPI fields, no UPI ID, no QR, no links), "Verifying…", then the lock notice. Nothing is collected, stored or sent. */
 (function () {
-  const KEY = "karya.premium.v2"; // v2: every device starts on Free (old v1 flags ignored)
-  try { localStorage.removeItem("karya.premium.v1"); } catch (e) {}
+  try { localStorage.removeItem("karya.premium.v1"); localStorage.removeItem("karya.premium.v2"); } catch (e) {} // old demo flags: ignored and cleared
   const WHAT = { video: "video", website: "website", image: "design", design: "design", social: "post", code: "app", email: "email", research: "report", booking: "booking", generic: "result" };
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const isOn = () => { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } };
-  const set = (v) => { try { v ? localStorage.setItem(KEY, "1") : localStorage.removeItem(KEY); } catch (e) {} sync(); document.dispatchEvent(new CustomEvent("karya-premium", { detail: { on: v } })); };
+  const isOn = () => false; // premium can never be on while Pro is locked
+  const set = () => { sync(); }; // no-op: nothing can turn Pro on
   const css = `
 .pw-wrap{position:relative}
 .pw-wrap.pw-locked>.pw-inner{filter:blur(7px);opacity:.55;pointer-events:none;user-select:none}
@@ -35,22 +35,6 @@ body.is-premium .prem-badge{display:inline-flex}
 .pw-demo{display:block;margin-top:12px;font-size:12px;color:var(--muted,#b9b7cf);text-align:center}
 .pw-main{width:100%;margin-top:14px;padding:13px;font-size:15px}
 .pw-sum{display:flex;justify-content:space-between;font-size:14px;padding:12px 14px;border-radius:14px;background:var(--panel,rgba(255,255,255,.05));border:1px solid var(--line,rgba(255,255,255,.08))}
-.pw-upi{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:10px;padding:10px 14px;border-radius:14px;border:1px dashed var(--line2,rgba(255,255,255,.18));font-size:14px}
-.pw-upi small{color:var(--muted,#b9b7cf)}
-.pw-upi b{font-family:ui-monospace,monospace;user-select:none}
-.pw-upi em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(251,191,36,.18);color:#fbbf24}
-.pw-demo-note{margin-top:10px;font-size:12px;font-weight:700;text-align:center;padding:6px 10px;border-radius:10px;background:rgba(251,191,36,.12);color:#fbbf24}
-.pw-panel{margin:8px 0 2px;padding:0 2px}
-.pw-panel .pw-upi{margin-top:0}
-.pw-form{display:flex;flex-direction:column;gap:8px;margin:0}
-.pw-row{display:flex;gap:8px}.pw-row .pw-in{flex:1;min-width:0}
-.pw-in{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:12px;border:1px solid var(--line2,rgba(255,255,255,.15));background:rgba(0,0,0,.25);color:inherit;font:inherit;font-size:16px}
-.pw-in:focus{outline:2px solid rgba(124,92,255,.6);outline-offset:0}
-select.pw-in option{color:#111}
-.pw-hint{font-size:11.5px;color:var(--muted,#b9b7cf)}
-.pw-chips{display:flex;flex-wrap:wrap;gap:8px}
-.pw-chip{padding:8px 12px;border-radius:99px;border:1px solid var(--line2,rgba(255,255,255,.15));background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
-.pw-chip.on{border-color:#7c5cff;background:rgba(124,92,255,.18)}
 .pw-opt{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line2,rgba(255,255,255,.15));background:var(--panel,rgba(255,255,255,.04));font-size:14px;cursor:pointer}
 .pw-opt.sel{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.18)}
 .pw-opt.dis{opacity:.45;cursor:not-allowed}
@@ -68,113 +52,79 @@ select.pw-in option{color:#111}
 .pw-plan.pw-free{background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line2,rgba(255,255,255,.14))}
 .pw-plan li.no::before{content:"✕ ";color:#f87171}
 .pw-plan li.no{opacity:.75}
-.pw-cur{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--muted,#b9b7cf)}`;
+.pw-cur{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.08);color:var(--muted,#b9b7cf)}
+.pw-lockbox{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px;border-radius:16px;border:1px dashed rgba(251,191,36,.5);background:rgba(251,191,36,.07)}
+.pw-lockbox b{font-size:15.5px}.pw-lockbox small{color:var(--muted,#b9b7cf);font-size:13px;line-height:1.45}
+.pw-lockbox .pw-btn{margin-top:6px}
+.pw-lockmodal{text-align:center;padding:6px 4px 2px}
+.pw-lockmodal .pw-lk{font-size:44px;line-height:1;margin:4px 0 10px}
+.pw-lockmodal h3{margin:0 0 10px;font-size:19px}
+.pw-lockmodal p{margin:0 0 10px;color:var(--muted,#b9b7cf);font-size:14.5px;line-height:1.55}
+.pw-lockmodal .pw-free{display:inline-block;margin:4px 0 2px;font-weight:800;color:#34d399}`;
   function ensureStyle() { if (document.getElementById("pw-css")) return; const st = document.createElement("style"); st.id = "pw-css"; st.textContent = css; document.head.appendChild(st); }
-  function sync() {
-    document.body.classList.toggle("is-premium", isOn());
-    document.querySelectorAll(".pw-wrap").forEach((w) => w.classList.toggle("pw-locked", !isOn()));
-  }
-  /* Wrap a result element: blurred + lock overlay until premium. */
-  function lock(el, plan) {
+  function sync() { document.body.classList.remove("is-premium"); }
+  /* Result step on the free plan: no preview at all — the output is removed and a lock box stands in its place. */
+  function lock(el, plan, quiet) {
     if (!el) return;
     ensureStyle();
-    if (el.querySelector(":scope > .pw-wrap")) { sync(); return; }
+    if (el.querySelector(".pw-lockbox")) return;
     const what = WHAT[(plan && plan.type && plan.type.id) || "generic"] || "result";
-    const wrap = document.createElement("div"); wrap.className = "pw-wrap";
-    const inner = document.createElement("div"); inner.className = "pw-inner";
-    while (el.firstChild) inner.appendChild(el.firstChild);
-    wrap.appendChild(inner);
-    const ov = document.createElement("div"); ov.className = "pw-lock";
-    ov.innerHTML = `<b>⭐ Upgrade to Premium to get your ${esc(what)}</b><small>Task complete ✓ · result Premium me unlock hoga</small><button type="button" class="pw-btn">⭐ Upgrade</button>`;
-    ov.querySelector(".pw-btn").addEventListener("click", () => open());
-    wrap.appendChild(ov); el.appendChild(wrap);
-    sync();
+    el.innerHTML = `<div class="pw-lockbox"><b>🔒 Task complete ✓ — ${esc(what)} Pro me milega</b><small>Pro abhi temporarily locked hai (high traffic). Free plan pe sirf progress dikhti hai.</small><button type="button" class="pw-btn">⭐ Upgrade</button></div>`;
+    el.querySelector(".pw-btn").addEventListener("click", () => open());
+    if (!quiet) setTimeout(() => notice(false), 600);
   }
   let sheet = null;
   function close() { if (sheet) sheet.hidden = true; }
-  function open() {
+  function ensureSheet() {
     ensureStyle();
     if (!sheet) {
-      sheet = document.createElement("div"); sheet.className = "pw-sheet"; sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-label", "Karya Premium");
+      sheet = document.createElement("div"); sheet.className = "pw-sheet"; sheet.setAttribute("role", "dialog"); sheet.setAttribute("aria-modal", "true"); sheet.setAttribute("aria-label", "Karya Pro");
       sheet.innerHTML = '<div class="pw-card"></div>';
       sheet.addEventListener("click", (e) => { if (e.target === sheet && !sheet._busy) close(); });
       document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sheet && !sheet.hidden && !sheet._busy) close(); });
       document.body.appendChild(sheet);
     }
-    planStep(); sheet.hidden = false;
+    sheet.hidden = false; return sheet.querySelector(".pw-card");
   }
-  const card = () => sheet.querySelector(".pw-card");
   const top = (t) => `<div class="pw-top"><h3>${t}</h3><button type="button" class="pw-x" aria-label="Close">✕</button></div>`;
-  const wireX = () => { const x = card().querySelector(".pw-x"); if (x) x.addEventListener("click", close); };
-  function planStep() {
-    const pro = isOn();
-    card().innerHTML = `${top("⭐ Karya Plans")}
-      <div class="pw-chatfree">Normal chat hamesha free hai 💬</div>
-      <div class="pw-plan pw-free"><div class="pp-h"><b>Free trial</b><span class="pw-price">₹0</span></div>
-      <ul><li>Task progress dekh sakte ho</li><li>Normal chat free (5% capacity)</li><li class="no">Advanced sawal &amp; task run 🔒</li><li class="no">Final result locked 🔒</li></ul>
-      ${pro ? "" : '<span class="pw-cur">Current plan</span>'}</div>
-      <div class="pw-plan pw-pro"><div class="pp-h"><b>⭐ Pro</b><span class="pw-price">₹99<small>/month (demo)</small></span></div>
-      <ul><li>Task ka result preview</li><li>Task execute / complete</li><li>Advanced / deep chat, full capacity</li><li>Unlimited chat</li></ul>
-      ${pro ? '<span class="pw-cur">Current plan ✓</span>' : ""}</div>
-      ${pro ? '<button type="button" class="pw-btn pw-main" data-done>Done</button>' : '<button type="button" class="pw-btn pw-main" data-next>Get Pro — ₹99 →</button>'}
-      <small class="pw-demo">Demo payment — koi paisa nahi katega</small>`;
-    wireX();
-    const nx = card().querySelector("[data-next]"); if (nx) nx.addEventListener("click", payStep);
-    const dn = card().querySelector("[data-done]"); if (dn) dn.addEventListener("click", close);
-  }
-  function payStep() {
-    const banks = ["State Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab National Bank", "Bank of Baroda", "Kotak Mahindra Bank", "Canara Bank", "Union Bank of India", "Other bank"];
-    const opt = (m, ic, t, sub, sel) => `<div class="pw-opt${sel ? " sel" : ""}" role="radio" tabindex="0" aria-checked="${sel}" data-m="${m}"><span class="ic">${ic}</span><span><b>${t}</b><br><small>${sub}</small></span><span class="rd"></span></div>`;
-    card().innerHTML = `${top("Checkout")}
-      <div class="pw-sum"><span>Karya Pro · 1 month (demo)</span><b>₹99</b></div>
-      <div class="pw-demo-note">Demo checkout — koi asli payment nahi hota</div>
+  /* Upgrade → checkout tiles → Pay → "Verifying…" → lock notice. It never succeeds and nothing is collected or sent. */
+  function open() {
+    const c = ensureSheet(); sheet._busy = false;
+    const tile = (m, ic, t, sub, sel) => `<div class="pw-opt${sel ? " sel" : ""}" role="radio" tabindex="0" aria-checked="${sel}" data-m="${m}"><span class="ic">${ic}</span><span><b>${t}</b><br><small>${sub}</small></span><span class="rd"></span></div>`;
+    c.innerHTML = `${top("Checkout")}
+      <div class="pw-sum"><span>Karya Pro · 1 month</span><b>₹99</b></div>
       <div role="radiogroup" aria-label="Payment method">
-      ${opt("upi", "UPI", "UPI", "Any UPI app", true)}
-      <div class="pw-panel" data-p="upi"><div class="pw-upi"><small>UPI ID</small><b>karya.site@upi</b><em>(demo)</em></div></div>
-      ${opt("card", "💳", "Debit / Credit Card", "Visa, Mastercard, RuPay", false)}
-      <div class="pw-panel" data-p="card" hidden><form class="pw-form" autocomplete="off" onsubmit="return false">
-        <input class="pw-in" inputmode="numeric" maxlength="19" placeholder="Card number" aria-label="Card number (demo)" autocomplete="off">
-        <div class="pw-row"><input class="pw-in" maxlength="5" placeholder="MM/YY" aria-label="Expiry (demo)" autocomplete="off"><input class="pw-in" inputmode="numeric" maxlength="4" type="password" placeholder="CVV" aria-label="CVV (demo)" autocomplete="off"></div>
-        <input class="pw-in" placeholder="Name on card" aria-label="Name on card (demo)" autocomplete="off">
-        <small class="pw-hint">Demo — details kahin save ya send nahi hote</small></form></div>
-      ${opt("nb", "🏦", "Net Banking", "All major banks", false)}
-      <div class="pw-panel" data-p="nb" hidden><select class="pw-in" aria-label="Choose bank (demo)">${banks.map((b) => `<option>${b}</option>`).join("")}</select></div>
-      ${opt("wallet", "👛", "Wallet", "Paytm, PhonePe, Amazon Pay, Mobikwik", false)}
-      <div class="pw-panel" data-p="wallet" hidden><div class="pw-chips">${["Paytm", "PhonePe", "Amazon Pay", "Mobikwik"].map((w, i) => `<button type="button" class="pw-chip${i ? "" : " on"}">${w}</button>`).join("")}</div></div>
+      ${tile("upi", "UPI", "UPI", "Any UPI app", true)}
+      ${tile("card", "💳", "Debit / Credit Card", "Visa, Mastercard, RuPay", false)}
+      ${tile("nb", "🏦", "Net Banking", "All major banks", false)}
+      ${tile("wallet", "👛", "Wallet", "Paytm, PhonePe, Amazon Pay", false)}
       </div>
-      <button type="button" class="pw-btn pw-main" data-pay>Pay ₹99</button>
-      <small class="pw-demo">Demo payment — koi paisa nahi katega</small>`;
-    wireX();
-    const c = card();
-    const pick = (o) => { c.querySelectorAll(".pw-opt").forEach((x) => { const on = x === o; x.classList.toggle("sel", on); x.setAttribute("aria-checked", on); }); c.querySelectorAll(".pw-panel").forEach((p) => { p.hidden = p.dataset.p !== o.dataset.m; }); };
+      <button type="button" class="pw-btn pw-main" data-pay>Pay ₹99</button>`;
+    c.querySelector(".pw-x").addEventListener("click", close);
+    const pick = (o) => c.querySelectorAll(".pw-opt").forEach((x) => { const on = x === o; x.classList.toggle("sel", on); x.setAttribute("aria-checked", on); });
     c.querySelectorAll(".pw-opt").forEach((o) => { o.addEventListener("click", () => pick(o)); o.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(o); } }); });
-    c.querySelectorAll(".pw-chip").forEach((b) => b.addEventListener("click", () => c.querySelectorAll(".pw-chip").forEach((x) => x.classList.toggle("on", x === b))));
-    c.querySelector("[data-pay]").addEventListener("click", () => { c.querySelectorAll(".pw-in").forEach((i) => { i.value = ""; }); verify(); }); // nothing typed is kept or sent
+    c.querySelector("[data-pay]").addEventListener("click", () => {
+      sheet._busy = true;
+      c.innerHTML = `<div class="pw-wait"><div class="pw-spin" aria-hidden="true"></div><b>Verifying payment…</b></div>`;
+      setTimeout(() => { sheet._busy = false; notice(true); }, 2000);
+    });
   }
-  function verify() {
-    sheet._busy = true;
-    card().innerHTML = `<div class="pw-wait"><div class="pw-spin" aria-hidden="true"></div><b>Verifying payment…</b><small>Demo — koi paisa nahi katega</small></div>`;
-    setTimeout(() => {
-      card().innerHTML = `<div class="pw-wait"><div class="pw-ok">✅</div><b>Payment verified (demo)</b><small>⭐ Pro unlocked</small></div>`;
-      set(true);
-      setTimeout(() => { sheet._busy = false; close(); }, 1300);
-    }, 2500);
-  }
-  function badge(host, before) {
-    if (!host || host.querySelector(".prem-badge")) return;
-    const b = document.createElement("span"); b.className = "prem-badge"; b.title = "Premium"; b.innerHTML = '⭐<span class="pb-t"> Premium</span>';
-    host.insertBefore(b, before ? host.firstChild : null);
+  /* The lock notice. afterPay = shown at the end of checkout ("Koi payment nahi liya gaya"). */
+  function notice(afterPay) {
+    const c = ensureSheet();
+    c.innerHTML = `<div class="pw-lockmodal" data-pro-locked><div class="pw-lk" aria-hidden="true">🔒</div>${afterPay
+      ? `<h3>Server response closed by owner Aarav Malik</h3><p>High traffic aur server load ki wajah se Pro features temporarily locked hain. <b>Koi payment nahi liya gaya.</b> Server prepare ho raha hai, jaldi wapas aayega.</p>`
+      : `<h3>Pro abhi temporarily locked hai</h3><p>High traffic aur server load ki wajah se Karya AI ke owner <b>Aarav Malik</b> ne Pro features ko kuch time ke liye lock kiya hai. Server prepare ho raha hai, jaldi wapas aayega.</p>`}
+      <span class="pw-free">Tab tak chat free hai 💬</span>
+      <button type="button" class="pw-btn pw-main" data-ok>OK</button></div>`;
+    c.querySelector("[data-ok]").addEventListener("click", close);
+    setTimeout(() => { const b = c.querySelector("[data-ok]"); if (b) b.focus(); }, 30);
   }
   function init() {
     ensureStyle();
-    badge(document.querySelector(".bar-actions"), true);
-    badge(document.querySelector(".top-actions"), true);
-    const wl = document.getElementById("wsLive");
-    if (wl && !wl.parentNode.querySelector(".prem-badge")) { const b = document.createElement("span"); b.className = "prem-badge sm"; b.textContent = "⭐ Pro"; b.title = "Premium"; wl.parentNode.insertBefore(b, wl); }
-    document.querySelectorAll("[data-prem-reset]").forEach((b) => b.addEventListener("click", () => { set(false); b.textContent = "Premium reset ✓"; setTimeout(() => { b.textContent = "Reset premium (demo)"; }, 1500); }));
+    document.querySelectorAll("[data-prem-reset]").forEach((b) => b.remove());
     sync();
-    window.addEventListener("storage", (e) => { if (e.key === KEY) sync(); });
   }
-  window.KaryaPremium = { isOn, lock, open, set, sync };
+  window.KaryaPremium = { isOn, lock, open, notice, set, sync, locked: true };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
