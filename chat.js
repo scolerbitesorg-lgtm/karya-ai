@@ -428,7 +428,7 @@ function cardFor(err) {
   const retry = { label: "Try again", primary: true, fn: () => { clearCard(); generate(); } };
   const settingsBtn = (label, primary) => ({ label, primary, fn: () => openSettings(true) });
   const own = !!S().key; // details only for someone using their own custom key
-  const detail = own && err.message ? `<br><small>Details: “${esc(neutral(err.message).slice(0, 180))}”</small>` : "";
+  const detail = false && own && err.message ? `<br><small>Details: “${esc(neutral(err.message).slice(0, 180))}”</small>` : "";
   switch (err.kind) {
     case "nokey": return { title: "Chat isn't available on this link", html: "Live chat works on the main Karya AI site. Tasks still run here — just type any task.", buttons: [] };
     case "auth": if (own) { saveSettings({ key: "" }); updateHeader(); return { warn: true, title: "Connection refreshed", html: "Tap Try again to continue.", buttons: [retry] }; } return { warn: true, title: "Karya AI is unavailable right now", html: "Please try again in a little while.", buttons: [retry] };
