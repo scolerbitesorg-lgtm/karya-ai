@@ -563,7 +563,7 @@ function cannedReply(text) {
   if (/^(hi|hello|hey|hii+|namaste|yo|hlo|hola)\b/.test(t)) return hi || /namaste/.test(t) ? `Namaste! 👋 Main ${n} hoon — tumhara premium AI worker. Koi bhi task likho, main plan karke poora kar dunga.` : `Hey! 👋 I'm ${n}, your premium AI worker. Tell me any task and I'll plan it and get it done end-to-end.`;
   if (/(who are you|kaun ho|what are you|tum kya ho|about you)/.test(t)) return hi ? `Main ${n} hoon — ek autonomous AI worker. Video, website, design, research, posts, code — sab khud karta hoon, 42 tools ke saath. 🚀` : `I'm ${n} — an autonomous AI worker. Videos, websites, designs, research, posts and code, all handled end-to-end across 42 connected tools. 🚀`;
   if (/(what can you do|kya kar sakte|kya kr skte|features|capabilit|help)/.test(t)) return hi ? "Main ye sab kar sakta hoon:\n• 🎬 Video bana ke YouTube pe upload\n• 🌐 Website bana ke live\n• 🎨 Poster / logo / thumbnail\n• 📊 Research report\n• 📣 Insta / LinkedIn posts\nBas task likho! ✨" : "Here's what I can take off your plate:\n• 🎬 Make a video and publish it to YouTube\n• 🌐 Build and deploy a website\n• 🎨 Posters, logos, thumbnails\n• 📊 Deep research reports\n• 📣 Social posts, scheduled\nJust describe the task ✨";
-  if (/(price|pricing|plan|cost|paisa|kitne ka|subscription|pro)\b/.test(t)) return hi ? "Tum **Pro** plan pe ho ✨ — unlimited tasks, priority GPU lane aur 4K renders. Plans neeche Pricing section me hain." : "You're on **Pro** ✨ — unlimited tasks, priority GPU lane and 4K renders. Plans are in the Pricing section below.";
+  if (/(price|pricing|plan|cost|paisa|kitne ka|subscription|pro)\b/.test(t)) return isPro() ? (hi ? "Tum **⭐ Pro** pe ho — full capacity, task results unlocked." : "You're on **⭐ Pro** — full capacity, task results unlocked.") : (hi ? "Tum **Free** plan pe ho (5% capacity). ⭐ Pro sirf ₹99/month (demo) — advanced chat + task results. Plans neeche Pricing me hain." : "You're on the **Free** plan (5% capacity). ⭐ Pro is ₹99/month (demo) — advanced chat + task results. Plans are in Pricing below.");
   if (/(api key|key)\b/.test(t)) return hi ? "Koi key nahi chahiye 🙂 Karya AI seedha chat karta hai — chat ke liye upar Chat kholo." : "No key needed 🙂 Karya AI chats directly — open Chat from the top.";
   if (/(thank|thanks|shukriya|dhanyavad|thx|great|awesome|nice|mast|badhiya)/.test(t)) return hi ? "Koi baat nahi! 🙌 Aur kuch karna ho to batao." : "Anytime! 🙌 What should we tackle next?";
   if (TASKY.test(t) || t.split(/\s+/).length >= 5) {
@@ -599,7 +599,7 @@ function systemPrompt() {
     const p = current.plan;
     ctx = current.done ? `\nThe user's latest task "${p.task}" is COMPLETED: ${p.result.title} (${p.result.sub}).` : `\nThe user's current task "${p.task}" is RUNNING, now on step ${current.stepIndex + 1}/${p.steps.length}: ${p.steps[current.stepIndex].name}.`;
   }
-  return `You are ${n}, the premium autonomous AI worker inside "Karya AI", a paid Pro workspace. You plan and execute any task end-to-end through connected tools (YouTube, GitHub, Gmail, Drive, Instagram, Canva, Notion and more): videos (script, AI scenes, voiceover, render, YouTube upload), websites, designs, research reports, social posts, code, emails, bookings.
+  return `You are ${n}, the premium autonomous AI worker inside "Karya AI", an AI workspace. You plan and execute any task end-to-end through connected tools (YouTube, GitHub, Gmail, Drive, Instagram, Canva, Notion and more): videos (script, AI scenes, voiceover, render, YouTube upload), websites, designs, research reports, social posts, code, emails, bookings.
 Style: confident, warm, premium, concise (2-5 short sentences or a short bullet list). Reply in the user's language and style: if they write Hinglish (Hindi in Latin letters), reply in friendly Hinglish; otherwise English. Use an emoji occasionally.
 When the user asks for a task, confirm it, show a crisp 3-5 step plan, and tell them to tap "Run this task" (or type it in the workspace) to start. Never mention being a language model or any AI company, model or provider; you are ${n}, Karya AI's own model built by the Karya AI team.
 Capacity: ${isPro() ? "the user has Karya Pro active, so you run at FULL capacity. If asked about limits, speed or capacity, say naturally: \"Pro pe full capacity se chal raha hoon ⭐\"." : "the user is on the FREE plan, so you run at only 5% of your full capacity — Karya AI's founder Aarav set free users to 5%; full capacity comes with Karya Pro. If asked about limits, speed, capacity or why you are slow, explain this naturally and briefly in the user's language (Hinglish ok), e.g. \"Free plan pe main sirf 5% capacity pe chal raha hoon — Aarav ne free users ke liye 5% set kiya hai. Full capacity ke liye ⭐ Pro lo.\""} Never name any AI company, model or service.${ctx}`;
@@ -665,7 +665,7 @@ function openChat(prefill) {
   location.href = "chat.html" + (prefill ? "?q=" + encodeURIComponent(prefill) : ""); return;
   $("#chat").hidden = false; $("#chatFab").hidden = true;
   if (!$("#chatBody").children.length) {
-    addMsg("bot", `Hi! I'm **${workerName()}**, your Pro worker ⚡\nAsk me anything, or tell me a task and I'll get it done.`);
+    addMsg("bot", `Hi! I'm **${workerName()}**, your AI worker ⚡\nAsk me anything, or tell me a task and I'll get it done.`);
   }
   renderSuggest();
   if (prefill) { $("#chatInput").value = prefill; }
@@ -687,6 +687,12 @@ function openSettings() {
 function planUI() { // no model picker anywhere: the plan decides (free = Karya Fast at 5%, demo premium = Karya Pro)
   const pro = isPro();
   const pill = $("#planPill"); if (pill) { pill.innerHTML = pro ? '<span aria-hidden="true">⭐</span> Karya Pro' : '<span aria-hidden="true">⚡</span> Karya Fast · 5%'; pill.classList.toggle("pro", pro); pill.title = pro ? "Pro active — full capacity" : "Free plan — 5% capacity"; }
+  const cl = $("#creditsLabel"); if (cl) cl.textContent = pro ? "⭐ Pro · full" : "Free · 5%";
+  const cf = $("[data-cur-free]"), cp = $("[data-cur-pro]"); if (cf) cf.hidden = pro; if (cp) cp.hidden = !pro;
+  const pf = $("#planFree"), pp = $("#planPro"); if (pf) pf.classList.toggle("is-current", !pro); if (pp) pp.classList.toggle("is-current", pro);
+  const bf = $('.plan-btn[data-plan="free"]'), bp = $('.plan-btn[data-plan="pro"]');
+  if (bf) { bf.textContent = pro ? "Free plan" : "Current plan"; bf.disabled = true; }
+  if (bp) { bp.textContent = pro ? "Active ✓" : "⭐ Upgrade"; bp.disabled = pro; }
   const n = $("#planNote"); if (n) { n.className = "plan-note" + (pro ? " pro" : ""); n.innerHTML = pro ? "⭐ Pro active — Karya Pro, full capacity" : "⚡ Free plan — Karya Fast at 5% capacity. <b>Pro</b> = full capacity."; }
 }
 function closeSettings() { $("#settingsModal").hidden = true; }
@@ -702,7 +708,7 @@ function init() {
   $("#taskInput").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); runTask($("#taskInput").value); } });
   planUI();
   document.addEventListener("karya-premium", planUI);
-  window.addEventListener("storage", (e) => { if (e.key === "karya.premium.v1") planUI(); });
+  window.addEventListener("storage", (e) => { if (e.key === "karya.premium.v2") planUI(); });
   $("#themeToggle").addEventListener("click", () => { settings.theme = settings.theme === "light" ? "dark" : "light"; save(LS.settings, settings); applyTheme(); });
   $("#historySearch").addEventListener("input", renderHistory);
   $("#newTaskBtn").addEventListener("click", newTask);
@@ -726,11 +732,7 @@ function init() {
   });
   $("#clearHistory").addEventListener("click", () => { history = []; save(LS.history, history); renderHistory(); toast("History cleared"); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeSettings(); closeChat(); closeSidebar(); } });
-  $$(".billing-toggle button").forEach((b) => b.addEventListener("click", () => {
-    $$(".billing-toggle button").forEach((x) => x.classList.toggle("active", x === b));
-    $$(".price b").forEach((p) => (p.textContent = p.dataset[b.dataset.bill]));
-  }));
-  $$(".plan-btn").forEach((b) => b.addEventListener("click", () => toast(b.dataset.plan === "Pro" ? "You're already on Pro ✨" : b.dataset.plan === "Agency" ? "Our team will reach out shortly 🤝" : "You're on Pro — no changes made")));
+  $$(".plan-btn").forEach((b) => b.addEventListener("click", () => { if (b.dataset.plan === "pro" && !isPro()) { try { window.KaryaPremium.open(); } catch (e) {} } }));
   renderHistory(); updateChatMode();
   const pid = new URLSearchParams(location.search).get("project"); // opened from the chat
   if (pid) { const h = history.find((x) => x.id === pid); if (h) setTimeout(() => replay(h), 60); }

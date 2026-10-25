@@ -406,3 +406,10 @@ a{color:inherit}
 .adv[open] > summary::before { content: "▾ "; }
 .adv[open] > summary { margin-bottom: 6px; }
 .msg .row.choice { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 2px; }
+
+/* free plan: Pro prompt card under a reply */
+.procard{margin-top:10px;max-width:520px;display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:16px;border:1px solid rgba(255,190,60,.45);background:linear-gradient(180deg,rgba(255,190,60,.14),rgba(255,190,60,.04))}
+.procard b{font-size:15px}
+.procard small{color:var(--muted);font-size:13px}
+.procard .btn{align-self:flex-start;margin-top:4px}
+.procard.on{border-color:rgba(52,211,153,.45);background:linear-gradient(180deg,rgba(52,211,153,.14),rgba(52,211,153,.04))}

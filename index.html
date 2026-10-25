@@ -27,7 +27,6 @@
     <a href="#pricing">Pricing</a>
   </nav>
   <div class="top-actions">
-    <span class="pro-badge" title="Karya Pro is active">PRO</span>
     <button class="icon-btn" id="themeToggle" aria-label="Switch light / dark mode">
       <svg class="i-moon" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
       <svg class="i-sun" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -54,9 +53,9 @@
     <p class="history-empty" id="historyEmpty">No projects yet. Every task you run is saved here.</p>
     <div class="side-card">
       <div class="side-card-row"><span class="dot dot-live"></span> Worker online</div>
-      <div class="usage"><span>Compute credits</span><b id="creditsLabel">∞ Pro</b></div>
+      <div class="usage"><span>Compute credits</span><b id="creditsLabel">Free · 5%</b></div>
       <div class="usage-bar"><i style="width:72%"></i></div>
-      <small>42 tools connected · Priority GPU lane</small>
+      <small>42 tools connected</small>
     </div>
   </aside>
   <div class="scrim" id="scrim" hidden></div>
@@ -144,26 +143,19 @@
     <!-- PRICING -->
     <section class="section" id="pricing" aria-labelledby="priceTitle">
       <h2 id="priceTitle" class="section-title">Simple, <span class="grad-text">premium</span> pricing</h2>
-      <p class="section-sub">Your workspace is on <b>Pro</b>. Upgrade or downgrade any time.</p>
-      <div class="billing-toggle" role="group" aria-label="Billing period">
-        <button class="active" data-bill="m">Monthly</button><button data-bill="y">Yearly <em>−20%</em></button>
-      </div>
-      <div class="price-grid">
-        <article class="price-card">
-          <h3>Starter</h3><p class="price"><b data-m="₹0" data-y="₹0">₹0</b><span>/mo</span></p>
-          <ul><li>20 tasks / month</li><li>Standard queue</li><li>720p video renders</li><li>Community support</li></ul>
-          <button class="btn btn-ghost plan-btn" data-plan="Starter">Downgrade</button>
+      <p class="section-sub" id="priceSub">Normal chat hamesha free hai 💬 Advanced chat + task results ke liye ⭐ Pro.</p>
+      <div class="price-grid two">
+        <article class="price-card" id="planFree">
+          <span class="ribbon" data-cur-free>Current plan</span>
+          <h3>Free trial</h3><p class="price"><b>₹0</b><span>/month</span></p>
+          <ul><li>Normal chat (5% capacity)</li><li>Task progress dekh sakte ho</li><li class="no">Advanced sawal &amp; task run</li><li class="no">Final result locked 🔒</li></ul>
+          <button class="btn btn-ghost plan-btn" data-plan="free" disabled>Current plan</button>
         </article>
-        <article class="price-card featured">
-          <span class="ribbon">Current plan</span>
-          <h3>Pro</h3><p class="price"><b data-m="₹1,499" data-y="₹1,199">₹1,499</b><span>/mo</span></p>
-          <ul><li>Unlimited tasks</li><li>Priority GPU lane</li><li>4K renders + auto-upload</li><li>All 42 integrations</li><li>Worker chat</li></ul>
-          <button class="btn btn-primary plan-btn" data-plan="Pro">Active ✓</button>
-        </article>
-        <article class="price-card">
-          <h3>Agency</h3><p class="price"><b data-m="₹7,999" data-y="₹6,399">₹7,999</b><span>/mo</span></p>
-          <ul><li>10 parallel workers</li><li>Team workspaces</li><li>White-label delivery</li><li>Dedicated success manager</li></ul>
-          <button class="btn btn-ghost plan-btn" data-plan="Agency">Talk to sales</button>
+        <article class="price-card featured" id="planPro">
+          <span class="ribbon" data-cur-pro hidden>Current plan</span>
+          <h3>⭐ Pro</h3><p class="price"><b>₹99</b><span>/month (demo)</span></p>
+          <ul><li>Advanced / deep chat, full capacity</li><li>Task execute / complete</li><li>Task ka result preview</li><li>Unlimited chat</li></ul>
+          <button class="btn btn-primary plan-btn" data-plan="pro">⭐ Upgrade</button>
         </article>
       </div>
     </section>

@@ -1,6 +1,7 @@
 /* Karya AI — DEMO premium paywall. No real payment: nothing is sent anywhere, no UPI ID, no payment link. */
 (function () {
-  const KEY = "karya.premium.v1";
+  const KEY = "karya.premium.v2"; // v2: every device starts on Free (old v1 flags ignored)
+  try { localStorage.removeItem("karya.premium.v1"); } catch (e) {}
   const WHAT = { video: "video", website: "website", image: "design", design: "design", social: "post", code: "app", email: "email", research: "report", booking: "booking", generic: "result" };
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const isOn = () => { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } };
@@ -34,6 +35,10 @@ body.is-premium .prem-badge{display:inline-flex}
 .pw-demo{display:block;margin-top:12px;font-size:12px;color:var(--muted,#b9b7cf);text-align:center}
 .pw-main{width:100%;margin-top:14px;padding:13px;font-size:15px}
 .pw-sum{display:flex;justify-content:space-between;font-size:14px;padding:12px 14px;border-radius:14px;background:var(--panel,rgba(255,255,255,.05));border:1px solid var(--line,rgba(255,255,255,.08))}
+.pw-upi{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:10px;padding:10px 14px;border-radius:14px;border:1px dashed var(--line2,rgba(255,255,255,.18));font-size:14px}
+.pw-upi small{color:var(--muted,#b9b7cf)}
+.pw-upi b{font-family:ui-monospace,monospace;user-select:none}
+.pw-upi em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(251,191,36,.18);color:#fbbf24}
 .pw-opt{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line2,rgba(255,255,255,.15));background:var(--panel,rgba(255,255,255,.04));font-size:14px;cursor:pointer}
 .pw-opt.sel{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.18)}
 .pw-opt.dis{opacity:.45;cursor:not-allowed}
@@ -92,12 +97,12 @@ body.is-premium .prem-badge{display:inline-flex}
   function planStep() {
     const pro = isOn();
     card().innerHTML = `${top("⭐ Karya Plans")}
-      <div class="pw-chatfree">Chat hamesha free hai 💬</div>
+      <div class="pw-chatfree">Normal chat hamesha free hai 💬</div>
       <div class="pw-plan pw-free"><div class="pp-h"><b>Free trial</b><span class="pw-price">₹0</span></div>
-      <ul><li>Task progress dekh sakte ho</li><li>Free &amp; limited chat</li><li class="no">Final result locked 🔒</li></ul>
+      <ul><li>Task progress dekh sakte ho</li><li>Normal chat free (5% capacity)</li><li class="no">Advanced sawal &amp; task run 🔒</li><li class="no">Final result locked 🔒</li></ul>
       ${pro ? "" : '<span class="pw-cur">Current plan</span>'}</div>
       <div class="pw-plan pw-pro"><div class="pp-h"><b>⭐ Pro</b><span class="pw-price">₹99<small>/month (demo)</small></span></div>
-      <ul><li>Task ka result preview</li><li>Task execute / complete</li><li>Unlimited chat</li></ul>
+      <ul><li>Task ka result preview</li><li>Task execute / complete</li><li>Advanced / deep chat, full capacity</li><li>Unlimited chat</li></ul>
       ${pro ? '<span class="pw-cur">Current plan ✓</span>' : ""}</div>
       ${pro ? '<button type="button" class="pw-btn pw-main" data-done>Done</button>' : '<button type="button" class="pw-btn pw-main" data-next>Get Pro — ₹99 →</button>'}
       <small class="pw-demo">Demo payment — koi paisa nahi katega</small>`;
@@ -109,6 +114,7 @@ body.is-premium .prem-badge{display:inline-flex}
     card().innerHTML = `${top("Checkout")}
       <div class="pw-sum"><span>Karya Pro · 1 month (demo)</span><b>₹99</b></div>
       <div class="pw-opt sel" role="radio" aria-checked="true"><span class="ic">UPI</span><span><b>UPI</b><br><small>Any UPI app</small></span><span class="rd"></span></div>
+      <div class="pw-upi"><small>UPI ID</small><b>karya.site@upi</b><em>(demo — koi asli payment nahi hota)</em></div>
       <div class="pw-opt dis" role="radio" aria-checked="false" aria-disabled="true"><span class="ic">💳</span><span><b>Card</b><br><small>Coming soon</small></span><span class="rd"></span></div>
       <button type="button" class="pw-btn pw-main" data-pay>Pay ₹99</button>
       <small class="pw-demo">Demo payment — koi paisa nahi katega</small>`;
