@@ -205,8 +205,11 @@ PLAN: the user has Karya Pro — answer deep and advanced questions fully (you m
 
 PLAN GATE — the user is on the FREE plan. Normal conversation stays free: greetings, small talk, and simple questions that need only a short 1–3 sentence answer — answer those normally.
 But if the user asks for something DEEP or ADVANCED — a long or detailed explanation, a step-by-step guide or study plan, notes, complex analysis or comparison, maths or problem solving with working, coding help or debugging, long writing (essay, letter, application, story, script, speech), translation of long text, or anything that needs more than a few sentences — then:
-1. Put this hidden tag as the very first line: [[NEEDS_PRO]]
+1. Your reply MUST start with this exact hidden tag on its own first line: [[NEEDS_PRO]]  (never skip it for such requests)
 2. Then write only ONE short sentence in the user's language — at most a tiny one-line gist — saying the full detailed answer is part of Karya Pro (Hinglish example: "Iska short jawab: … — poora detail ⭐ Pro me milega."). Do NOT give the full answer, steps, lists or details.
+Exact example reply for "photosynthesis detail me samjhao":
+[[NEEDS_PRO]]
+Short me: plants sunlight se apna khana banate hain — poora detail ⭐ Pro me milega.
 Never mention the tag. Don't use [[NEEDS_PRO]] for greetings, small talk or simple short questions. For tasks still use [[RUN_TASK: …]] as above (the app handles Pro for task runs).`}`;
 }
 
@@ -218,7 +221,7 @@ function parseTags(text) {
   return out;
 }
 function stripTags(text, streaming) {
-  let t = String(text || "").replace(TAG_RE, "");
+  let t = String(text || "").replace(TAG_RE, "").replace(/\[?\[?\s*NEEDS_PRO\s*\]?\]?/gi, "");
   if (streaming) t = t.replace(/\[\[?[^\]\n]*$/, "").replace(/\[$/, ""); // half-streamed tag at the end
   return t.replace(/\n{3,}/g, "\n\n").trim();
 }
@@ -332,6 +335,7 @@ function botEl(m, isLast) {
   fillActions(d, m, isLast); return d;
 }
 /* ---------- free plan: advanced asks + task runs show a Pro card ---------- */
+const PRO_UPSELL_RE = /(⭐\s*)?pro\s+(me|mein|में|par|pe)\s+(milega|milegi|milta|milti|milenge|available)|(available|included)\s+(in|with)\s+(⭐\s*)?(karya\s+)?pro\b|प्रो\s*में\s*मिल/i;
 function attachProCard(el, m) {
   if (!el || $(".procard", el)) return;
   const c = document.createElement("div"); c.className = "procard"; c.setAttribute("data-pro-card", "");
@@ -974,7 +978,7 @@ async function generate(opts = {}) {
   if (!text && stopped) { el.remove(); setBusy(false); return; }
   const tags = stopped ? [] : parseTags(text);
   const rawTags = (text.match(TAG_RE) || []).filter((t) => !/NEEDS_PRO/i.test(t));
-  const needsPro = !stopped && !isPro() && tags.some((t) => t.kind === "NEEDS_PRO");
+  const needsPro = !stopped && !isPro() && (tags.some((t) => t.kind === "NEEDS_PRO") || /NEEDS_PRO/i.test(text) || PRO_UPSELL_RE.test(text));
   const sc = scrubReply(stripTags(text));
   let clean = sc.text;
   // What the reply asks the app to do: the model's tags, else the app's own reading of the user's words.
