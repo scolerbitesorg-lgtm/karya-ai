@@ -39,6 +39,18 @@ body.is-premium .prem-badge{display:inline-flex}
 .pw-upi small{color:var(--muted,#b9b7cf)}
 .pw-upi b{font-family:ui-monospace,monospace;user-select:none}
 .pw-upi em{font-style:normal;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(251,191,36,.18);color:#fbbf24}
+.pw-demo-note{margin-top:10px;font-size:12px;font-weight:700;text-align:center;padding:6px 10px;border-radius:10px;background:rgba(251,191,36,.12);color:#fbbf24}
+.pw-panel{margin:8px 0 2px;padding:0 2px}
+.pw-panel .pw-upi{margin-top:0}
+.pw-form{display:flex;flex-direction:column;gap:8px;margin:0}
+.pw-row{display:flex;gap:8px}.pw-row .pw-in{flex:1;min-width:0}
+.pw-in{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:12px;border:1px solid var(--line2,rgba(255,255,255,.15));background:rgba(0,0,0,.25);color:inherit;font:inherit;font-size:16px}
+.pw-in:focus{outline:2px solid rgba(124,92,255,.6);outline-offset:0}
+select.pw-in option{color:#111}
+.pw-hint{font-size:11.5px;color:var(--muted,#b9b7cf)}
+.pw-chips{display:flex;flex-wrap:wrap;gap:8px}
+.pw-chip{padding:8px 12px;border-radius:99px;border:1px solid var(--line2,rgba(255,255,255,.15));background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}
+.pw-chip.on{border-color:#7c5cff;background:rgba(124,92,255,.18)}
 .pw-opt{display:flex;align-items:center;gap:10px;margin-top:10px;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line2,rgba(255,255,255,.15));background:var(--panel,rgba(255,255,255,.04));font-size:14px;cursor:pointer}
 .pw-opt.sel{border-color:#7c5cff;box-shadow:0 0 0 3px rgba(124,92,255,.18)}
 .pw-opt.dis{opacity:.45;cursor:not-allowed}
@@ -111,14 +123,33 @@ body.is-premium .prem-badge{display:inline-flex}
     const dn = card().querySelector("[data-done]"); if (dn) dn.addEventListener("click", close);
   }
   function payStep() {
+    const banks = ["State Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Punjab National Bank", "Bank of Baroda", "Kotak Mahindra Bank", "Canara Bank", "Union Bank of India", "Other bank"];
+    const opt = (m, ic, t, sub, sel) => `<div class="pw-opt${sel ? " sel" : ""}" role="radio" tabindex="0" aria-checked="${sel}" data-m="${m}"><span class="ic">${ic}</span><span><b>${t}</b><br><small>${sub}</small></span><span class="rd"></span></div>`;
     card().innerHTML = `${top("Checkout")}
       <div class="pw-sum"><span>Karya Pro · 1 month (demo)</span><b>₹99</b></div>
-      <div class="pw-opt sel" role="radio" aria-checked="true"><span class="ic">UPI</span><span><b>UPI</b><br><small>Any UPI app</small></span><span class="rd"></span></div>
-      <div class="pw-upi"><small>UPI ID</small><b>karya.site@upi</b><em>(demo — koi asli payment nahi hota)</em></div>
-      <div class="pw-opt dis" role="radio" aria-checked="false" aria-disabled="true"><span class="ic">💳</span><span><b>Card</b><br><small>Coming soon</small></span><span class="rd"></span></div>
+      <div class="pw-demo-note">Demo checkout — koi asli payment nahi hota</div>
+      <div role="radiogroup" aria-label="Payment method">
+      ${opt("upi", "UPI", "UPI", "Any UPI app", true)}
+      <div class="pw-panel" data-p="upi"><div class="pw-upi"><small>UPI ID</small><b>karya.site@upi</b><em>(demo)</em></div></div>
+      ${opt("card", "💳", "Debit / Credit Card", "Visa, Mastercard, RuPay", false)}
+      <div class="pw-panel" data-p="card" hidden><form class="pw-form" autocomplete="off" onsubmit="return false">
+        <input class="pw-in" inputmode="numeric" maxlength="19" placeholder="Card number" aria-label="Card number (demo)" autocomplete="off">
+        <div class="pw-row"><input class="pw-in" maxlength="5" placeholder="MM/YY" aria-label="Expiry (demo)" autocomplete="off"><input class="pw-in" inputmode="numeric" maxlength="4" type="password" placeholder="CVV" aria-label="CVV (demo)" autocomplete="off"></div>
+        <input class="pw-in" placeholder="Name on card" aria-label="Name on card (demo)" autocomplete="off">
+        <small class="pw-hint">Demo — details kahin save ya send nahi hote</small></form></div>
+      ${opt("nb", "🏦", "Net Banking", "All major banks", false)}
+      <div class="pw-panel" data-p="nb" hidden><select class="pw-in" aria-label="Choose bank (demo)">${banks.map((b) => `<option>${b}</option>`).join("")}</select></div>
+      ${opt("wallet", "👛", "Wallet", "Paytm, PhonePe, Amazon Pay, Mobikwik", false)}
+      <div class="pw-panel" data-p="wallet" hidden><div class="pw-chips">${["Paytm", "PhonePe", "Amazon Pay", "Mobikwik"].map((w, i) => `<button type="button" class="pw-chip${i ? "" : " on"}">${w}</button>`).join("")}</div></div>
+      </div>
       <button type="button" class="pw-btn pw-main" data-pay>Pay ₹99</button>
       <small class="pw-demo">Demo payment — koi paisa nahi katega</small>`;
-    wireX(); card().querySelector("[data-pay]").addEventListener("click", verify);
+    wireX();
+    const c = card();
+    const pick = (o) => { c.querySelectorAll(".pw-opt").forEach((x) => { const on = x === o; x.classList.toggle("sel", on); x.setAttribute("aria-checked", on); }); c.querySelectorAll(".pw-panel").forEach((p) => { p.hidden = p.dataset.p !== o.dataset.m; }); };
+    c.querySelectorAll(".pw-opt").forEach((o) => { o.addEventListener("click", () => pick(o)); o.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(o); } }); });
+    c.querySelectorAll(".pw-chip").forEach((b) => b.addEventListener("click", () => c.querySelectorAll(".pw-chip").forEach((x) => x.classList.toggle("on", x === b))));
+    c.querySelector("[data-pay]").addEventListener("click", () => { c.querySelectorAll(".pw-in").forEach((i) => { i.value = ""; }); verify(); }); // nothing typed is kept or sent
   }
   function verify() {
     sheet._busy = true;
