@@ -434,7 +434,7 @@ function cardFor(err) {
     case "auth": if (own) { saveSettings({ key: "" }); updateHeader(); return { warn: true, title: "Connection refreshed", html: "Tap Try again to continue.", buttons: [retry] }; } return { warn: true, title: "Karya AI is unavailable right now", html: "Please try again in a little while.", buttons: [retry] };
     case "rate": return isPro()
       ? { warn: true, title: "Abhi bahut messages aa gaye", html: "Thodi der baad try karo." + detail, buttons: [retry] }
-      : { warn: true, limit: true, title: "Aaj ki free limit poori ho gayi", html: "Thodi der baad try karo ya ⭐ Pro lo — Pro me full capacity milti hai." + detail, buttons: [retry, { label: "⭐ Pro lo", primary: false, fn: () => { try { window.KaryaPremium.open(); } catch (e) {} } }] };
+      : { warn: true, limit: true, title: "Karya abhi bahut busy hai", html: "High traffic hai — 1 minute baad dobara bhejo. Chat hamesha free hai 💬" + detail, buttons: [retry, { label: "⭐ Pro lo", primary: false, fn: () => { try { window.KaryaPremium.open(); } catch (e) {} } }] };
     case "model": return { warn: true, title: "Karya AI is busy right now", html: "Please try again in a little while." + detail, buttons: [retry] };
     case "forbidden": return { warn: true, title: "The request was refused", html: "Karya AI couldn't answer this one. Try again or start a new chat." + detail, buttons: [retry] };
     case "toolong": return { warn: true, title: "This chat got too long", html: "Start a new chat, or try again (I'll send less history)." + detail, buttons: [{ label: "New chat", primary: true, fn: () => newChat() }, { label: "Try again", fn: () => { clearCard(); generate({ budget: 4000 }); } }] };
