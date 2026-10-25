@@ -214,12 +214,12 @@
       <input id="workerName" type="text" maxlength="24" placeholder="Karya">
     </div>
     <div class="field">
-      <label for="groqKey">Groq API key <small>(for live chat)</small></label>
+      <label for="groqKey">Groq API key <small>(optional)</small></label>
       <div class="key-row">
         <input id="groqKey" type="password" placeholder="gsk_…" spellcheck="false" autocomplete="off">
         <button type="button" class="btn btn-ghost btn-sm" id="toggleKey">Show</button>
       </div>
-      <small class="hint">Stored only in this browser (localStorage). Never sent anywhere except api.groq.com.</small>
+      <small class="hint">Optional — the server key is used if set. A personal key stays only in this browser and is sent only to api.groq.com.</small>
     </div>
     <div class="field">
       <label for="groqModel">Chat model</label>

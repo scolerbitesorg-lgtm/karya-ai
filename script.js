@@ -677,7 +677,7 @@ function renderSuggest() {
 function openSettings() {
   $("#workerName").value = settings.name; $("#groqKey").value = settings.key; $("#groqModel").value = settings.model; $("#speedSel").value = settings.speed;
   if (!$("#groqModel").value) $("#groqModel").value = DEFAULTS.model;
-  $("#keyStatus").textContent = settings.key ? "Live AI chat is on." : "No key saved — chat uses built-in replies.";
+  $("#keyStatus").textContent = settings.key ? "Live AI chat is on." : "No personal key — chat uses the server key if the site has one.";
   $("#settingsModal").hidden = false; setTimeout(() => $("#workerName").focus(), 50);
 }
 function closeSettings() { $("#settingsModal").hidden = true; }

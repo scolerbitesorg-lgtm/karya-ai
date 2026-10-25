@@ -1,4 +1,4 @@
-/* Karya AI — full-screen chat (Groq, streaming). Key lives only in this browser. */
+/* Karya AI — full-screen chat (Groq, streaming). A personal key (optional) lives only in this browser; without one, chat goes through the same-origin /api/chat proxy (Vercel), which holds the key server-side. */
 (() => {
 "use strict";
 const LS = { settings: "karya.settings.v1", chats: "karya.chats.v1", active: "karya.chats.active" };
@@ -22,6 +22,21 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 
 let settings = load(LS.settings, {}) || {};
 const S = () => Object.assign({ key: "", model: DEFAULT_MODEL, temp: 0.7 }, settings);
+/* server proxy (Vercel /api/chat): probed once; null = unknown, true = key set on the server, false = no proxy */
+const PROXY = "/api/chat", HEALTH = "/api/health";
+let server = null;
+const serverReady = (async () => {
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch(HEALTH, { cache: "no-store", signal: ctl.signal }); clearTimeout(t);
+    const ct = r.headers.get("content-type") || "";
+    const j = r.ok && /json/.test(ct) ? await r.json() : null;
+    server = !!(j && j.ok === true && j.key === true);
+  } catch (e) { server = false; }
+  try { onServerKnown(); } catch (e) {}
+  return server;
+})();
+const live = () => !!S().key || server === true;
 function saveSettings(patch) { settings = Object.assign({}, load(LS.settings, {}) || {}, patch); save(LS.settings, settings); }
 
 document.documentElement.setAttribute("data-theme", settings.theme === "light" ? "light" : "dark");
@@ -232,8 +247,16 @@ async function streamGroq({ key, model, temp, budget, extras, signal, onDelta, m
   const body = Object.assign({ model, messages: messages || buildMessages(budget), stream: true, temperature: temp, max_completion_tokens: maxTokens || MAX_OUT }, extras);
   let res;
   try {
-    res = await fetch(API + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key }, body: JSON.stringify(body), signal });
+    res = key // own key: straight to Groq (unchanged); no key: same-origin server proxy
+      ? await fetch(API + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + key }, body: JSON.stringify(body), signal })
+      : await fetch(PROXY, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal });
   } catch (e) { if (e.name === "AbortError") throw e; throw new GroqError("network", e.message); }
+  if (!key) { // proxy missing (static host: 404/405/HTML) or server key not set → the "add key" card
+    const ct = res.headers.get("content-type") || "";
+    let noProxy = res.status === 404 || res.status === 405 || /text\/html/.test(ct);
+    if (!noProxy && res.status === 500) { try { const j = await res.clone().json(); noProxy = /GROQ_API_KEY not set/.test(j && j.error); } catch (e) {} }
+    if (noProxy) { server = false; try { onServerKnown(); } catch (e) {} throw new GroqError("nokey", ""); }
+  }
   if (!res.ok) throw await readError(res);
   if (!res.body || !res.body.getReader) { // very old browsers: no streaming, read whole
     const txt = await res.text(); let full = "";
@@ -299,7 +322,7 @@ function fillActions(d, m, isLast) {
 }
 function helloEl() {
   const d = document.createElement("div"); d.className = "hello";
-  const hasKey = !!S().key;
+  const hasKey = live();
   d.innerHTML = `<div class="orb" aria-hidden="true"></div><h1>How can I help today?</h1><p>${hasKey ? "Chat in English, Hinglish or हिंदी — or give me any task (video, website, poster, email…) and I'll run it right here." : "Give me any task — video, website, poster, email — and I'll run it right here. Add your Groq key in Settings for live AI chat."}</p><div class="sugg"></div>`;
   const sug = [
     ["Ek motivational video bana ke YouTube pe upload karo", "Task · Video"],
@@ -317,7 +340,7 @@ function renderThread() {
   const lastBot = chat.messages.length - 1;
   chat.messages.forEach((m, idx) => thread.appendChild(m.role === "user" ? userEl(m) : m.role === "run" ? chipEl(m) : m.role === "ui" ? uiEl(m) : botEl(m, idx === lastBot && !m.kind && !m.tags)));
   const last = chat.messages[chat.messages.length - 1];
-  if (last.role === "user" && !busy) showCard(cardFor(S().key ? { kind: "unanswered" } : { kind: "nokey" }));
+  if (last.role === "user" && !busy) showCard(cardFor(live() ? { kind: "unanswered" } : { kind: "nokey" }));
   stick = true; requestAnimationFrame(() => toBottom());
 }
 function renderList() {
@@ -336,8 +359,14 @@ function renderList() {
 function updateHeader() {
   const s = S(), m = MODELS.find((x) => x.id === s.model);
   $("#modelLabel").innerHTML = 'Karya AI <small>' + esc(m ? m.label : s.model.split("/").pop()) + "</small>";
-  $("#statusDot").className = "dot" + (s.key ? " live" : "");
-  $("#modelPill").title = s.key ? "Live · " + s.model : "Add your Groq key to go live";
+  $("#statusDot").className = "dot" + (live() ? " live" : "");
+  $("#modelPill").title = live() ? "Live · " + s.model : "Add your Groq key to go live";
+}
+function onServerKnown() { // the /api/health probe answered: refresh the live dot, the empty-chat hello and the Settings status
+  updateHeader();
+  const h = document.querySelector(".hello p");
+  if (h) h.textContent = live() ? "Chat in English, Hinglish or हिंदी — or give me any task (video, website, poster, email…) and I'll run it right here." : "Give me any task — video, website, poster, email — and I'll run it right here. Add your Groq key in Settings for live AI chat.";
+  if (!$("#settings").hidden) setKeyStatus();
 }
 
 /* ---------- notice cards ---------- */
@@ -792,8 +821,9 @@ async function generate(opts = {}) {
   const s = S();
   const lastUser = [...chat.messages].reverse().find((x) => x.role === "user");
   const userText = lastUser ? lastUser.content : "";
-  if (!s.key) {
-    // No key: commands and tasks still run (canned path); plain chat asks for a key.
+  if (!s.key && server === null) await serverReady; // first message right after load: wait for the proxy probe
+  if (!s.key && server !== true) {
+    // No key and no server key: commands and tasks still run (canned path); plain chat asks for a key.
     const acts = localActions(userText);
     if (acts.length) { await cannedActions(acts, userText); return; }
     if (isTaskIntent(userText)) { await cannedTask(userText); return; }
@@ -915,9 +945,13 @@ function openSettings(resume) {
   const s = S(); resumeAfterSave = !!resume;
   $("#keyInput").value = s.key; $("#keyInput").type = "password"; $("#keyShow").textContent = "Show";
   fillModels(s.model); $("#tempIn").value = s.temp; $("#tempVal").textContent = (+s.temp).toFixed(1);
-  const st = $("#keyStatus"); st.className = "status"; st.textContent = s.key ? "Key saved · live AI is on." : "No key yet.";
+  setKeyStatus();
   $("#settings").hidden = false; closeSide();
-  setTimeout(() => { if (!s.key) $("#keyInput").focus(); }, 60);
+  setTimeout(() => { if (!s.key && server !== true) $("#keyInput").focus(); }, 60);
+}
+function setKeyStatus() {
+  const st = $("#keyStatus"); st.className = "status";
+  st.textContent = S().key ? "Key saved · live AI is on (your own key)." : server === true ? "No personal key needed · live AI is on via the server key." : "No key yet — add one for live AI chat.";
 }
 function closeSettings() { $("#settings").hidden = true; }
 async function testKey() {
